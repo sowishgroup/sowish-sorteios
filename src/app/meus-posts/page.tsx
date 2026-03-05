@@ -27,11 +27,11 @@ export default function MeusPostsPage() {
       setErrorMsg(null);
 
       const {
-        data: { user },
-        error: userError,
-      } = await supabase.auth.getUser();
+        data: { session },
+        error: sessionError,
+      } = await supabase.auth.getSession();
 
-      if (userError || !user) {
+      if (sessionError || !session?.user) {
         router.replace("/");
         return;
       }
@@ -39,8 +39,11 @@ export default function MeusPostsPage() {
       try {
         const res = await fetch("/api/instagram/media", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ userId: user.id }),
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({ userId: session.user.id }),
         });
         const json = await res.json();
 

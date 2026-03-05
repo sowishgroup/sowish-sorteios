@@ -8,6 +8,26 @@ const getSupabaseServer = () => {
   return createClient(supabaseUrl, supabaseServiceKey);
 };
 
+/** Obtém o user id: primeiro pelo JWT no header (sessão), depois pelo body. */
+async function getUserIdFromRequest(req: NextRequest): Promise<{ userId: string | null }> {
+  const authHeader = req.headers.get("authorization");
+  const token = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : null;
+
+  if (token) {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+    if (supabaseUrl && supabaseAnonKey) {
+      const client = createClient(supabaseUrl, supabaseAnonKey);
+      const { data: { user }, error } = await client.auth.getUser(token);
+      if (!error && user?.id) return { userId: user.id };
+    }
+  }
+
+  const body = await req.json().catch(() => ({}));
+  const userId = (body as { userId?: string }).userId ?? null;
+  return { userId };
+}
+
 export type InstagramMediaItem = {
   id: string;
   caption?: string;
@@ -19,12 +39,11 @@ export type InstagramMediaItem = {
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-    const { userId } = body as { userId?: string };
+    const { userId } = await getUserIdFromRequest(req);
 
     if (!userId) {
       return NextResponse.json(
-        { message: "ID do usuário não informado." },
+        { message: "Faça login e tente novamente." },
         { status: 400 }
       );
     }
@@ -37,11 +56,23 @@ export async function POST(req: NextRequest) {
       .eq("user_id", userId)
       .maybeSingle();
 
-    if (accountError || !account) {
+    if (accountError) {
+      console.error("Erro ao buscar conta Instagram no Supabase:", accountError);
       return NextResponse.json(
         {
           message:
-            "Conta do Instagram não encontrada. Conecte no dashboard.",
+            "Erro ao verificar conta do Instagram. Tente reconectar no dashboard.",
+          data: [],
+        },
+        { status: 200 }
+      );
+    }
+
+    if (!account) {
+      return NextResponse.json(
+        {
+          message:
+            "Nenhuma conta do Instagram vinculada a este login. Vá ao dashboard e clique em “Conectar meu Instagram” (use a mesma conta com que está logado agora).",
           data: [],
         },
         { status: 200 }
