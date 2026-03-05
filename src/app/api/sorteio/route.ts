@@ -2,10 +2,11 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-
-const supabaseServer = createClient(supabaseUrl, supabaseServiceKey);
+const getSupabaseServer = () => {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+  return createClient(supabaseUrl, supabaseServiceKey);
+};
 
 type Comment = {
   id: string;
@@ -88,6 +89,8 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
+
+    const supabaseServer = getSupabaseServer();
 
     // 1) Verificar créditos do usuário
     const { data: creditsRow, error: creditsError } = await supabaseServer

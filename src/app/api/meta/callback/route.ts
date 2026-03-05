@@ -2,10 +2,11 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-
-const supabaseServer = createClient(supabaseUrl, supabaseServiceKey);
+const getSupabaseServer = () => {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+  return createClient(supabaseUrl, supabaseServiceKey);
+};
 
 export async function GET(req: NextRequest) {
   const url = new URL(req.url);
@@ -132,6 +133,8 @@ export async function GET(req: NextRequest) {
 
     const instagramBusinessAccountId = igData.instagram_business_account
       .id as string;
+
+    const supabaseServer = getSupabaseServer();
 
     // 5) Salvar de forma segura no Supabase na tabela user_instagram_accounts
     const { error: upsertError } = await supabaseServer
