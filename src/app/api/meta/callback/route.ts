@@ -8,31 +8,49 @@ const getSupabaseServer = () => {
   return createClient(supabaseUrl, supabaseServiceKey);
 };
 
+/** Base URL pública do app (evita redirect para 0.0.0.0 atrás de proxy). */
+function getPublicBaseUrl(req: NextRequest): string {
+  const envUrl = process.env.APP_URL;
+  if (envUrl) {
+    return envUrl.replace(/\/$/, "");
+  }
+  const host =
+    req.headers.get("x-forwarded-host") ||
+    req.headers.get("host") ||
+    "";
+  const proto =
+    req.headers.get("x-forwarded-proto") ||
+    (host.includes("localhost") ? "http" : "https");
+  if (host && !host.startsWith("0.0.0.0") && host !== "localhost") {
+    return `${proto}://${host}`;
+  }
+  return "https://sorteio.sowishgroup.com";
+}
+
 export async function GET(req: NextRequest) {
   const url = new URL(req.url);
   const code = url.searchParams.get("code");
   const state = url.searchParams.get("state"); // user_id passado no state
   const error = url.searchParams.get("error");
+  const baseUrl = getPublicBaseUrl(req);
 
   if (error) {
     return NextResponse.redirect(
-      new URL(`/dashboard?instagram_error=${encodeURIComponent(error)}`, req.url)
+      `${baseUrl}/dashboard?instagram_error=${encodeURIComponent(error)}`
     );
   }
 
   if (!code || !state) {
     return NextResponse.redirect(
-      new URL(
-        "/dashboard?instagram_error=missing_code_or_state",
-        req.url
-      )
+      `${baseUrl}/dashboard?instagram_error=missing_code_or_state`
     );
   }
 
   try {
     const appId = process.env.NEXT_PUBLIC_FACEBOOK_APP_ID!;
     const appSecret = process.env.FACEBOOK_APP_SECRET!;
-    const redirectUri = process.env.NEXT_PUBLIC_FACEBOOK_REDIRECT_URI!;
+    // Mesmo redirect_uri que o usuário usou (origem da requisição), exigido pela Meta
+    const redirectUri = `${baseUrl}/api/meta/callback`;
 
     // 1) Trocar o código por um access token de curta duração
     const shortTokenRes = await fetch(
@@ -49,10 +67,7 @@ export async function GET(req: NextRequest) {
     if (!shortTokenRes.ok) {
       console.error("Erro ao obter short-lived token:", shortTokenData);
       return NextResponse.redirect(
-        new URL(
-          "/dashboard?instagram_error=short_token_failed",
-          req.url
-        )
+        `${baseUrl}/dashboard?instagram_error=short_token_failed`
       );
     }
 
@@ -71,10 +86,7 @@ export async function GET(req: NextRequest) {
     if (!longTokenRes.ok) {
       console.error("Erro ao obter long-lived token:", longTokenData);
       return NextResponse.redirect(
-        new URL(
-          "/dashboard?instagram_error=long_token_failed",
-          req.url
-        )
+        `${baseUrl}/dashboard?instagram_error=long_token_failed`
       );
     }
 
@@ -91,10 +103,7 @@ export async function GET(req: NextRequest) {
     if (!pagesRes.ok || !Array.isArray(pagesData.data) || pagesData.data.length === 0) {
       console.error("Nenhuma página encontrada para o usuário:", pagesData);
       return NextResponse.redirect(
-        new URL(
-          "/dashboard?instagram_error=no_pages_found",
-          req.url
-        )
+        `${baseUrl}/dashboard?instagram_error=no_pages_found`
       );
     }
 
@@ -124,10 +133,7 @@ export async function GET(req: NextRequest) {
         igData
       );
       return NextResponse.redirect(
-        new URL(
-          "/dashboard?instagram_error=no_instagram_business_account",
-          req.url
-        )
+        `${baseUrl}/dashboard?instagram_error=no_instagram_business_account`
       );
     }
 
@@ -151,22 +157,16 @@ export async function GET(req: NextRequest) {
     if (upsertError) {
       console.error("Erro ao salvar dados no Supabase:", upsertError);
       return NextResponse.redirect(
-        new URL(
-          "/dashboard?instagram_error=supabase_upsert_failed",
-          req.url
-        )
+        `${baseUrl}/dashboard?instagram_error=supabase_upsert_failed`
       );
     }
 
     // 6) Redirecionar o usuário para a página de posts
-    return NextResponse.redirect(new URL("/meus-posts", req.url));
+    return NextResponse.redirect(`${baseUrl}/meus-posts`);
   } catch (e) {
     console.error("Erro inesperado no callback da Meta:", e);
     return NextResponse.redirect(
-      new URL(
-        "/dashboard?instagram_error=unexpected_error",
-        req.url
-      )
+      `${baseUrl}/dashboard?instagram_error=unexpected_error`
     );
   }
 }
