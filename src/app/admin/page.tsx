@@ -139,16 +139,16 @@ export default function AdminPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-slate-950 text-slate-50 flex items-center justify-center">
-        <p className="text-sm text-slate-300">Carregando painel admin...</p>
+      <main className="min-h-screen bg-white text-slate-600 flex items-center justify-center">
+        <p className="text-sm text-slate-500">Carregando painel admin...</p>
       </main>
     );
   }
 
   if (!isAdmin) {
     return (
-      <main className="min-h-screen bg-slate-950 text-slate-50 flex items-center justify-center">
-        <p className="text-sm text-slate-300">
+      <main className="min-h-screen bg-white text-slate-700 flex items-center justify-center">
+        <p className="text-sm text-slate-500">
           Acesso negado. Esta área é restrita a administradores.
         </p>
       </main>
@@ -156,66 +156,66 @@ export default function AdminPage() {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-950 to-slate-950 text-slate-50">
+    <main className="min-h-screen bg-white text-slate-900">
       <div className="mx-auto max-w-6xl px-4 sm:px-6 py-8 space-y-6">
         <header className="space-y-1">
-          <p className="text-[11px] uppercase tracking-[0.3em] text-slate-400/80">
+          <p className="text-[11px] uppercase tracking-[0.3em] text-slate-500">
             Admin
           </p>
-          <h1 className="text-2xl font-semibold md:text-3xl">
+          <h1 className="text-2xl font-semibold text-slate-900 md:text-3xl">
             Painel de administração
           </h1>
-          <p className="text-sm text-slate-400 mt-1">
+          <p className="text-sm text-slate-500 mt-1">
             Gerencie usuários, créditos e comunicados globais.
           </p>
         </header>
 
         {summary && (
           <section className="grid gap-4 sm:grid-cols-2">
-            <div className="rounded-2xl border border-white/10 bg-slate-950/80 p-5">
-              <p className="text-xs font-semibold text-slate-200">
+            <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-5">
+              <p className="text-xs font-semibold text-slate-600">
                 Usuários cadastrados
               </p>
-              <p className="mt-2 text-3xl font-bold">
+              <p className="mt-2 text-3xl font-bold text-slate-900">
                 {summary.totalUsers ?? 0}
               </p>
             </div>
-            <div className="rounded-2xl border border-white/10 bg-slate-950/80 p-5">
-              <p className="text-xs font-semibold text-slate-200">
+            <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-5">
+              <p className="text-xs font-semibold text-slate-600">
                 Créditos em circulação
               </p>
-              <p className="mt-2 text-3xl font-bold">
+              <p className="mt-2 text-3xl font-bold text-slate-900">
                 {summary.totalCredits ?? 0}
-                <span className="ml-1 text-sm text-slate-400">créditos</span>
+                <span className="ml-1 text-sm text-slate-500">créditos</span>
               </p>
             </div>
           </section>
         )}
 
         <section className="grid gap-6 md:grid-cols-2 items-start">
-          <div className="rounded-2xl border border-white/10 bg-slate-950/80 p-5 space-y-4">
-            <p className="text-sm font-semibold text-slate-200">
+          <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-5 space-y-4">
+            <p className="text-sm font-semibold text-slate-700">
               Adicionar créditos manuais
             </p>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-slate-500">
               Use para bonificar clientes, resolver suporte ou conceder créditos
               promocionais.
             </p>
             <div className="space-y-3">
               <div className="space-y-1">
-                <label className="text-xs font-medium text-slate-300">
+                <label className="text-xs font-medium text-slate-600">
                   E-mail do usuário
                 </label>
                 <input
                   type="email"
                   value={grantEmail}
                   onChange={(e) => setGrantEmail(e.target.value)}
-                  className="w-full rounded-lg border border-white/15 bg-slate-950 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#F56040] focus:border-[#F56040]"
+                  className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-[#E1306C] focus:border-[#E1306C]"
                   placeholder="cliente@exemplo.com"
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-xs font-medium text-slate-300">
+                <label className="text-xs font-medium text-slate-600">
                   Quantidade de créditos
                 </label>
                 <input
@@ -225,49 +225,49 @@ export default function AdminPage() {
                   onChange={(e) =>
                     setGrantAmount(Math.max(1, Number(e.target.value) || 1))
                   }
-                  className="w-32 rounded-lg border border-white/15 bg-slate-950 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#F56040] focus:border-[#F56040]"
+                  className="w-32 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-[#E1306C] focus:border-[#E1306C]"
                 />
               </div>
             </div>
             <button
               type="button"
               onClick={handleGrantCredits}
-              className="w-full rounded-xl bg-gradient-to-r from-[#FEDA77] via-[#F56040] to-[#D62976] hover:brightness-110 text-slate-950 font-semibold py-2.5 text-sm transition"
+              className="w-full rounded-xl bg-gradient-to-r from-[#E1306C] to-[#F77737] hover:brightness-110 text-white font-semibold py-2.5 text-sm transition"
             >
               Adicionar créditos
             </button>
           </div>
 
-          <div className="rounded-2xl border border-white/10 bg-slate-950/80 p-5 space-y-4">
-            <p className="text-sm font-semibold text-slate-200">
+          <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-5 space-y-4">
+            <p className="text-sm font-semibold text-slate-700">
               Enviar comunicado global
             </p>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-slate-500">
               Publica um banner de atualização que será exibido no painel dos
               usuários.
             </p>
             <div className="space-y-3">
               <div className="space-y-1">
-                <label className="text-xs font-medium text-slate-300">
+                <label className="text-xs font-medium text-slate-600">
                   Título
                 </label>
                 <input
                   type="text"
                   value={broadcastTitle}
                   onChange={(e) => setBroadcastTitle(e.target.value)}
-                  className="w-full rounded-lg border border-white/15 bg-slate-950 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#D62976] focus:border-[#D62976]"
+                  className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-[#E1306C] focus:border-[#E1306C]"
                   placeholder="Nova funcionalidade, manutenção programada..."
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-xs font-medium text-slate-300">
+                <label className="text-xs font-medium text-slate-600">
                   Mensagem
                 </label>
                 <textarea
                   value={broadcastMessage}
                   onChange={(e) => setBroadcastMessage(e.target.value)}
                   rows={4}
-                  className="w-full rounded-lg border border-white/15 bg-slate-950 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#D62976] focus:border-[#D62976] resize-none"
+                  className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-[#E1306C] focus:border-[#E1306C] resize-none"
                   placeholder="Escreva o comunicado que aparecerá para todos os usuários."
                 />
               </div>
@@ -275,7 +275,7 @@ export default function AdminPage() {
             <button
               type="button"
               onClick={handleBroadcast}
-              className="w-full rounded-xl bg-gradient-to-r from-[#FEDA77] via-[#F56040] to-[#D62976] hover:brightness-110 text-slate-950 font-semibold py-2.5 text-sm transition"
+              className="w-full rounded-xl bg-gradient-to-r from-[#E1306C] to-[#F77737] hover:brightness-110 text-white font-semibold py-2.5 text-sm transition"
             >
               Publicar comunicado
             </button>
@@ -285,12 +285,12 @@ export default function AdminPage() {
         {(feedback || errorMsg) && (
           <div className="max-w-2xl">
             {feedback && (
-              <p className="text-xs text-emerald-300 bg-emerald-950/40 border border-emerald-900/60 rounded-md px-3 py-2">
+              <p className="text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-md px-3 py-2">
                 {feedback}
               </p>
             )}
             {errorMsg && (
-              <p className="mt-2 text-xs text-red-300 bg-red-950/40 border border-red-900/60 rounded-md px-3 py-2">
+              <p className="mt-2 text-xs text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2">
                 {errorMsg}
               </p>
             )}

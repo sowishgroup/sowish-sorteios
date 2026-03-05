@@ -188,28 +188,28 @@ export default function ContaPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-slate-950 text-slate-50 flex items-center justify-center">
-        <p className="text-sm text-slate-300">Carregando conta...</p>
+      <main className="min-h-screen bg-white text-slate-700 flex items-center justify-center">
+        <p className="text-sm text-slate-500">Carregando conta...</p>
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-950 to-slate-950 text-slate-50">
+    <main className="min-h-screen bg-white text-slate-900">
       <div className="mx-auto max-w-5xl px-4 sm:px-6 py-8 space-y-6">
         <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="text-[11px] uppercase tracking-[0.3em] text-slate-400/80">
+            <p className="text-[11px] uppercase tracking-[0.3em] text-slate-500">
               Conta
             </p>
-            <h1 className="text-2xl font-semibold">Painel do usuário</h1>
-            <p className="text-sm text-slate-400 mt-1">
+            <h1 className="text-2xl font-semibold text-slate-900">Painel do usuário</h1>
+            <p className="text-sm text-slate-500 mt-1">
               Gerencie seus dados, créditos e preferências.
             </p>
           </div>
           <button
             onClick={handleLogout}
-            className="self-start rounded-full border border-white/15 bg-slate-950/90 px-4 py-2 text-xs text-slate-100 hover:bg-slate-900/80 transition"
+            className="self-start rounded-full border border-slate-300 bg-white px-4 py-2 text-xs text-slate-700 hover:bg-slate-50 transition"
           >
             Sair da conta
           </button>
@@ -217,12 +217,12 @@ export default function ContaPage() {
 
         <section className="grid gap-6 lg:grid-cols-[minmax(0,1.8fr)_minmax(0,1.2fr)] items-start">
           <div className="space-y-5">
-            <div className="rounded-2xl border border-white/10 bg-slate-950/80 p-5 space-y-5 shadow">
+            <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-5 space-y-5 shadow-sm">
               <div className="flex items-center gap-4">
                 <button
                   type="button"
                   onClick={handleAvatarClick}
-                  className="relative h-20 w-20 rounded-full border border-white/15 bg-slate-900 flex items-center justify-center overflow-hidden group"
+                  className="relative h-20 w-20 rounded-full border border-slate-200 bg-white flex items-center justify-center overflow-hidden group"
                 >
                   {profile?.avatar_url ? (
                     <Image
@@ -238,7 +238,7 @@ export default function ContaPage() {
                         .toUpperCase()}
                     </span>
                   )}
-                  <span className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 text-[10px] flex items-center justify-center transition">
+                  <span className="absolute inset-0 bg-slate-900/50 opacity-0 group-hover:opacity-100 text-[10px] text-white flex items-center justify-center transition">
                     Trocar foto
                   </span>
                 </button>
@@ -253,7 +253,7 @@ export default function ContaPage() {
                   <p className="text-sm font-semibold">
                     {profile?.full_name || "Seu nome"}
                   </p>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-slate-500">
                     {email ?? "sem e-mail"}
                   </p>
                 </div>
@@ -261,7 +261,7 @@ export default function ContaPage() {
 
               <div className="space-y-3">
                 <div className="space-y-1">
-                  <label className="text-xs font-medium text-slate-300">
+                  <label className="text-xs font-medium text-slate-600">
                     Nome completo
                   </label>
                   <input
@@ -274,19 +274,19 @@ export default function ContaPage() {
                           : null
                       )
                     }
-                    className="w-full rounded-lg border border-white/15 bg-slate-950 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#F56040] focus:border-[#F56040]"
+                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-[#E1306C] focus:border-[#E1306C]"
                     placeholder="Como quer aparecer nos relatórios de sorteio"
                   />
                 </div>
               </div>
 
               {errorMsg && (
-                <p className="text-sm text-red-400 bg-red-950/40 border border-red-900/60 rounded-md px-3 py-2">
+                <p className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2">
                   {errorMsg}
                 </p>
               )}
               {successMsg && (
-                <p className="text-sm text-emerald-300 bg-emerald-950/40 border border-emerald-900/60 rounded-md px-3 py-2">
+                <p className="text-sm text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-md px-3 py-2">
                   {successMsg}
                 </p>
               )}
@@ -295,17 +295,17 @@ export default function ContaPage() {
                 type="button"
                 disabled={saving}
                 onClick={handleSave}
-                className="mt-1 w-full rounded-xl bg-gradient-to-r from-[#FEDA77] via-[#F56040] to-[#D62976] hover:brightness-110 text-slate-950 font-semibold py-2.5 text-sm transition disabled:opacity-60 disabled:cursor-not-allowed"
+                className="mt-1 w-full rounded-xl bg-gradient-to-r from-[#E1306C] to-[#F77737] hover:brightness-110 text-white font-semibold py-2.5 text-sm transition disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 {saving ? "Salvando..." : "Salvar alterações"}
               </button>
             </div>
 
-            <div className="rounded-2xl border border-white/10 bg-slate-950/80 p-5 space-y-3">
-              <p className="text-sm font-semibold text-slate-200">
+            <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-5 space-y-3">
+              <p className="text-sm font-semibold text-slate-700">
                 Segurança e acesso
               </p>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-slate-500">
                 Em breve você poderá alterar sua senha diretamente por aqui. No
                 momento, utilize o fluxo de redefinição via e-mail caso
                 esqueça.
@@ -314,41 +314,41 @@ export default function ContaPage() {
           </div>
 
           <aside className="space-y-5">
-            <div className="rounded-2xl border border-white/10 bg-slate-950/80 p-5 space-y-3">
+            <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-5 space-y-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs font-semibold text-slate-200">
+                  <p className="text-xs font-semibold text-slate-700">
                     Créditos
                   </p>
-                  <p className="mt-1 text-3xl font-bold">
+                  <p className="mt-1 text-3xl font-bold text-slate-900">
                     {credits ?? 0}
-                    <span className="ml-1 text-sm text-slate-400">créditos</span>
+                    <span className="ml-1 text-sm text-slate-500">créditos</span>
                   </p>
                 </div>
-                <div className="relative h-14 w-14 rounded-full bg-gradient-to-tr from-[#FEDA77] via-[#F56040] to-[#D62976] p-[2px]">
-                  <div className="h-full w-full rounded-full bg-slate-950 flex items-center justify-center text-[10px] text-slate-200">
+                <div className="relative h-14 w-14 rounded-full bg-gradient-to-tr from-[#E1306C] to-[#FCAF45] p-[2px]">
+                  <div className="h-full w-full rounded-full bg-white flex items-center justify-center text-[10px] text-slate-600">
                     Sorteios
                   </div>
                 </div>
               </div>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-slate-500">
                 Você pode usar 1 crédito por sorteio rodado. Créditos gratuitos
                 podem ser concedidos em campanhas promocionais.
               </p>
               <button
                 type="button"
                 onClick={() => router.push("/comprar")}
-                className="w-full rounded-lg bg-[#F56040] hover:bg-[#D62976] text-xs font-semibold py-2.5 transition"
+                className="w-full rounded-lg bg-[#E1306C] hover:bg-[#C13584] text-white text-xs font-semibold py-2.5 transition"
               >
                 Comprar créditos (Pix em breve)
               </button>
             </div>
 
-            <div className="rounded-2xl border border-red-900/60 bg-red-950/40 p-5 space-y-3">
-              <p className="text-sm font-semibold text-red-200">
+            <div className="rounded-2xl border border-red-200 bg-red-50 p-5 space-y-3">
+              <p className="text-sm font-semibold text-red-700">
                 Encerrar conta
               </p>
-              <p className="text-xs text-red-100/80">
+              <p className="text-xs text-red-600/90">
                 Ao excluir sua conta, todos os sorteios, dados conectados do
                 Instagram e créditos restantes serão removidos de forma
                 permanente.
@@ -356,7 +356,7 @@ export default function ContaPage() {
               <button
                 type="button"
                 onClick={handleDeleteAccount}
-                className="w-full rounded-lg border border-red-500/70 bg-transparent text-xs font-semibold py-2.5 text-red-200 hover:bg-red-900/40 transition"
+                className="w-full rounded-lg border border-red-400 bg-transparent text-xs font-semibold py-2.5 text-red-700 hover:bg-red-100 transition"
               >
                 Excluir conta permanentemente
               </button>

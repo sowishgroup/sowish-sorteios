@@ -178,7 +178,7 @@ export default function SorteioPage() {
       const dataUrl = await toPng(resultImageRef.current, {
         width: 1080,
         pixelRatio: 2,
-        backgroundColor: "#0f172a",
+        backgroundColor: "#f8fafc",
       });
       const a = document.createElement("a");
       a.href = dataUrl;
@@ -192,23 +192,23 @@ export default function SorteioPage() {
   const currentParticipant = participants[rollingIndex];
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-950 to-slate-950 text-slate-50">
+    <main className="min-h-screen bg-white text-slate-900">
       {(showReveal && winners.length > 0) && (
         <Confetti recycle={false} numberOfPieces={400} />
       )}
 
       <div className="mx-auto max-w-6xl px-4 sm:px-6 py-6 sm:py-8 space-y-6">
         <header className="space-y-1">
-          <p className="text-[11px] uppercase tracking-[0.3em] text-slate-400/80">
+          <p className="text-[11px] uppercase tracking-[0.3em] text-slate-500">
             Sorteio
           </p>
-          <h1 className="text-2xl font-semibold md:text-3xl">
+          <h1 className="text-2xl font-semibold text-slate-900 md:text-3xl">
             Configurar sorteio do{" "}
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#FEDA77] via-[#F56040] to-[#D62976]">
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#E1306C] via-[#F77737] to-[#FCAF45]">
               post selecionado
             </span>
           </h1>
-          <p className="text-sm text-slate-400 mt-1">
+          <p className="text-sm text-slate-500 mt-1">
             Defina as regras, debite 1 crédito e deixe o Sowish escolher os
             vencedores. Os nomes rodam na tela antes do resultado.
           </p>
@@ -217,20 +217,20 @@ export default function SorteioPage() {
         {/* Tela da roleta: nomes rodando */}
         {rolling && participants.length > 0 && (
           <div
-            className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-slate-950/95 backdrop-blur-md px-4"
+            className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white/95 backdrop-blur-md px-4"
             aria-live="polite"
           >
-            <p className="text-sm uppercase tracking-widest text-slate-400 mb-4">
+            <p className="text-sm uppercase tracking-widest text-slate-500 mb-4">
               Sorteador
             </p>
             <div className="text-center min-h-[120px] flex flex-col justify-center">
               <p
                 key={rollingIndex}
-                className="text-3xl sm:text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#FEDA77] via-[#F56040] to-[#D62976] animate-pulse"
+                className="text-3xl sm:text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#E1306C] via-[#F77737] to-[#FCAF45] animate-pulse"
               >
                 @{currentParticipant?.username ?? "..."}
               </p>
-              <p className="mt-2 text-sm text-slate-400 line-clamp-2 max-w-md mx-auto">
+              <p className="mt-2 text-sm text-slate-500 line-clamp-2 max-w-md mx-auto">
                 {currentParticipant?.text}
               </p>
             </div>
@@ -245,22 +245,22 @@ export default function SorteioPage() {
           <section className="space-y-6">
             <div
               ref={resultImageRef}
-              className="rounded-2xl border border-white/10 bg-slate-900/90 p-6 sm:p-8 max-w-2xl mx-auto shadow-2xl"
+              className="rounded-2xl border border-slate-200 bg-slate-50/80 p-6 sm:p-8 max-w-2xl mx-auto shadow-lg"
               style={{ minHeight: 400 }}
             >
               <div className="text-center mb-6">
-                <p className="text-lg sm:text-xl font-semibold text-[#FEDA77] mb-1">
+                <p className="text-lg sm:text-xl font-semibold text-[#E1306C] mb-1">
                   Parabéns!
                 </p>
                 {winners.length === 1 ? (
-                  <p className="text-xl sm:text-2xl text-slate-100">
+                  <p className="text-xl sm:text-2xl text-slate-800">
                     O ganhador(a) é{" "}
-                    <span className="font-bold text-[#F56040]">
+                    <span className="font-bold text-[#E1306C]">
                       @{winners[0].username}
                     </span>
                   </p>
                 ) : (
-                  <p className="text-xl sm:text-2xl text-slate-100">
+                  <p className="text-xl sm:text-2xl text-slate-800">
                     Os ganhadores são:
                   </p>
                 )}
@@ -272,15 +272,15 @@ export default function SorteioPage() {
                     key={w.id}
                     className="flex flex-col items-center text-center"
                   >
-                    <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-gradient-to-br from-[#FEDA77] via-[#F56040] to-[#D62976] p-[3px] shadow-lg flex items-center justify-center">
-                      <div className="w-full h-full rounded-full bg-slate-900 flex items-center justify-center text-3xl sm:text-4xl font-bold text-white">
+                    <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-gradient-to-br from-[#E1306C] via-[#F77737] to-[#FCAF45] p-[3px] shadow-lg flex items-center justify-center">
+                      <div className="w-full h-full rounded-full bg-white flex items-center justify-center text-3xl sm:text-4xl font-bold text-slate-700">
                         {(w.username || "?").charAt(0).toUpperCase()}
                       </div>
                     </div>
-                    <p className="mt-2 font-semibold text-slate-100">
+                    <p className="mt-2 font-semibold text-slate-800">
                       @{w.username}
                     </p>
-                    <p className="text-xs text-slate-400 line-clamp-2 max-w-[200px]">
+                    <p className="text-xs text-slate-500 line-clamp-2 max-w-[200px]">
                       {w.text}
                     </p>
                   </div>
@@ -288,7 +288,7 @@ export default function SorteioPage() {
               </div>
 
               {mediaUrl && (
-                <div className="relative w-full aspect-square max-w-sm mx-auto rounded-xl overflow-hidden border border-white/10">
+                <div className="relative w-full aspect-square max-w-sm mx-auto rounded-xl overflow-hidden border border-slate-200">
                   <Image
                     src={mediaUrl}
                     alt="Post do sorteio"
@@ -314,7 +314,7 @@ export default function SorteioPage() {
               <button
                 type="button"
                 onClick={downloadResultImage}
-                className="rounded-xl bg-gradient-to-r from-[#FEDA77] via-[#F56040] to-[#D62976] text-slate-950 font-semibold py-3 px-6 hover:brightness-110 transition"
+                className="rounded-xl bg-gradient-to-r from-[#E1306C] to-[#F77737] text-white font-semibold py-3 px-6 hover:brightness-110 transition"
               >
                 Baixar imagem para Instagram
               </button>
@@ -325,7 +325,7 @@ export default function SorteioPage() {
         <div className="grid gap-8 lg:grid-cols-[minmax(0,2fr)_minmax(0,1.4fr)] items-start">
           <section className="space-y-4">
             {!showReveal && (
-              <div className="rounded-2xl overflow-hidden border border-white/10 bg-slate-950/80 shadow-xl">
+              <div className="rounded-2xl overflow-hidden border border-slate-200 bg-slate-50/80 shadow-sm">
                 {mediaUrl ? (
                   <div className="relative w-full aspect-square">
                     <Image
@@ -336,12 +336,12 @@ export default function SorteioPage() {
                     />
                   </div>
                 ) : (
-                  <div className="flex items-center justify-center h-64 text-sm text-slate-400">
+                  <div className="flex items-center justify-center h-64 text-sm text-slate-500">
                     Não foi possível carregar a imagem do post.
                   </div>
                 )}
-                <div className="p-4 border-t border-white/10">
-                  <p className="text-xs text-slate-200 line-clamp-3">
+                <div className="p-4 border-t border-slate-200">
+                  <p className="text-xs text-slate-600 line-clamp-3">
                     {caption || "Post sem legenda."}
                   </p>
                 </div>
@@ -349,8 +349,8 @@ export default function SorteioPage() {
             )}
 
             {showReveal && winners.length > 0 && (
-              <div className="rounded-2xl border border-white/10 bg-slate-950/80 p-4 lg:hidden">
-                <h2 className="text-sm font-semibold text-[#FEDA77] mb-2">
+              <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4 lg:hidden">
+                <h2 className="text-sm font-semibold text-[#E1306C] mb-2">
                   Vencedores
                 </h2>
                 <ul className="space-y-2">
@@ -359,10 +359,10 @@ export default function SorteioPage() {
                       key={w.id}
                       className="flex items-center gap-2 text-sm"
                     >
-                      <span className="font-semibold text-[#FCAF45]">
+                      <span className="font-semibold text-[#F77737]">
                         @{w.username}
                       </span>
-                      <span className="text-slate-400 line-clamp-1">
+                      <span className="text-slate-500 line-clamp-1">
                         {w.text}
                       </span>
                     </li>
@@ -373,11 +373,11 @@ export default function SorteioPage() {
           </section>
 
           {!showReveal && (
-            <section className="rounded-2xl border border-white/10 bg-slate-950/85 p-6 space-y-6 shadow-lg shadow-black/40">
-              <h2 className="text-lg font-semibold">Configurações do sorteio</h2>
+            <section className="rounded-2xl border border-slate-200 bg-slate-50/80 p-6 space-y-6 shadow-sm">
+              <h2 className="text-lg font-semibold text-slate-900">Configurações do sorteio</h2>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-200">
+                <label className="text-sm font-medium text-slate-700">
                   Número de ganhadores
                 </label>
                 <input
@@ -387,12 +387,12 @@ export default function SorteioPage() {
                   onChange={(e) =>
                     setNumWinners(Math.max(1, Number(e.target.value) || 1))
                   }
-                  className="w-32 rounded-lg border border-white/15 bg-slate-950 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#F56040] focus:border-[#F56040]"
+                  className="w-32 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-[#E1306C] focus:border-[#E1306C]"
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-200">
+                <label className="text-sm font-medium text-slate-700">
                   Palavra-chave obrigatória (opcional)
                 </label>
                 <input
@@ -400,9 +400,9 @@ export default function SorteioPage() {
                   value={keyword}
                   onChange={(e) => setKeyword(e.target.value)}
                   placeholder="Ex: #sowishsorteios"
-                  className="w-full rounded-lg border border-white/15 bg-slate-950 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#D62976] focus:border-[#D62976]"
+                  className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-[#E1306C] focus:border-[#E1306C]"
                 />
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-slate-500">
                   Apenas comentários que contiverem essa palavra serão válidos.
                 </p>
               </div>
@@ -413,18 +413,18 @@ export default function SorteioPage() {
                   type="checkbox"
                   checked={uniquePerUser}
                   onChange={(e) => setUniquePerUser(e.target.checked)}
-                  className="mt-1 h-4 w-4 rounded border-slate-600 bg-slate-950 text-[#FCAF45] focus:ring-[#FCAF45]"
+                  className="mt-1 h-4 w-4 rounded border-slate-400 bg-white text-[#E1306C] focus:ring-[#E1306C]"
                 />
                 <label
                   htmlFor="uniquePerUser"
-                  className="text-sm text-slate-200 cursor-pointer"
+                  className="text-sm text-slate-700 cursor-pointer"
                 >
                   Filtrar duplicados — 1 chance por pessoa
                 </label>
               </div>
 
               {errorMsg && (
-                <p className="text-sm text-red-400 bg-red-950/40 border border-red-900/60 rounded-md px-3 py-2">
+                <p className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2">
                   {errorMsg}
                 </p>
               )}
@@ -433,14 +433,14 @@ export default function SorteioPage() {
                 type="button"
                 disabled={loading}
                 onClick={handleRunDraw}
-                className="mt-2 w-full rounded-xl bg-gradient-to-r from-[#FEDA77] via-[#F56040] to-[#D62976] hover:brightness-110 text-slate-950 font-semibold py-3.5 text-sm uppercase tracking-wide transition disabled:opacity-60 disabled:cursor-not-allowed shadow-lg shadow-[#D62976]/40"
+                className="mt-2 w-full rounded-xl bg-gradient-to-r from-[#E1306C] to-[#F77737] hover:brightness-110 text-white font-semibold py-3.5 text-sm uppercase tracking-wide transition disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 {loading
                   ? "Realizando sorteio..."
                   : "Realizar Sorteio (Custa 1 Crédito)"}
               </button>
 
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-slate-500">
                 Os nomes dos participantes vão rodar na tela e depois o(s)
                 ganhador(es) será(ão) revelado(s). Você pode compartilhar o
                 resultado no WhatsApp ou baixar uma imagem para o Instagram.

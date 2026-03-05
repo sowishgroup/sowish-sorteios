@@ -9,8 +9,10 @@ import { supabase } from "@/lib/supabaseClient";
 type InstagramMedia = {
   id: string;
   caption?: string;
-  media_url: string;
+  media_url?: string;
+  thumbnail_url?: string;
   permalink?: string;
+  media_type?: string;
 };
 
 export default function MeusPostsPage() {
@@ -34,42 +36,22 @@ export default function MeusPostsPage() {
         return;
       }
 
-      // Buscar os dados do Instagram para este usuário
-      const { data, error } = await supabase
-        .from("user_instagram_accounts")
-        .select("instagram_business_account_id,long_lived_token")
-        .eq("user_id", user.id)
-        .maybeSingle();
-
-      if (error || !data) {
-        setErrorMsg(
-          "Não encontramos uma conta do Instagram conectada. Volte ao dashboard e clique em 'Conectar meu Instagram'."
-        );
-        setLoading(false);
-        return;
-      }
-
       try {
-        const igAccountId = data.instagram_business_account_id as string;
-        const token = data.long_lived_token as string;
+        const res = await fetch("/api/instagram/media", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId: user.id }),
+        });
+        const json = await res.json();
 
-        const mediaRes = await fetch(
-          `https://graph.facebook.com/v20.0/${encodeURIComponent(
-            igAccountId
-          )}/media?fields=id,caption,media_url,permalink&limit=15&access_token=${encodeURIComponent(
-            token
-          )}`
-        );
-        const mediaData = await mediaRes.json();
-
-        if (!mediaRes.ok || !Array.isArray(mediaData.data)) {
-          console.error("Erro ao buscar mídias do Instagram:", mediaData);
-          setErrorMsg("Erro ao buscar postagens do Instagram.");
-          setLoading(false);
-          return;
+        if (Array.isArray(json.data)) {
+          setPosts(json.data as InstagramMedia[]);
+          if (json.message && json.data.length === 0) {
+            setErrorMsg(json.message);
+          }
+        } else {
+          setErrorMsg(json.message ?? "Erro ao carregar postagens.");
         }
-
-        setPosts(mediaData.data as InstagramMedia[]);
       } catch (err) {
         console.error("Erro inesperado ao buscar posts:", err);
         setErrorMsg("Erro inesperado ao buscar postagens.");
@@ -81,69 +63,75 @@ export default function MeusPostsPage() {
     fetchPosts();
   }, [router]);
 
+  const postImageUrl = (post: InstagramMedia) =>
+    post.media_url || post.thumbnail_url || "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400' viewBox='0 0 400 400'%3E%3Crect fill='%23e2e8f0' width='400' height='400'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%2394a3b8' font-family='sans-serif' font-size='18'%3EPost%3C/text%3E%3C/svg%3E";
+
   if (loading) {
     return (
-      <main className="min-h-screen bg-slate-950 text-slate-50 flex items-center justify-center">
-        <p className="text-sm text-slate-300">Carregando suas postagens...</p>
+      <main className="min-h-screen bg-white text-slate-700 flex items-center justify-center">
+        <p className="text-sm text-slate-500">Carregando suas postagens...</p>
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-950 to-slate-950 text-slate-50">
+    <main className="min-h-screen bg-white text-slate-900">
       <div className="mx-auto max-w-6xl px-6 py-8 space-y-6">
         <header className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
-            <p className="text-[11px] uppercase tracking-[0.3em] text-slate-400/80">
+            <p className="text-[11px] uppercase tracking-[0.3em] text-slate-500">
               Conteúdo
             </p>
-            <h1 className="text-2xl font-semibold">
+            <h1 className="text-2xl font-semibold text-slate-900">
               Meus posts do{" "}
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#FEDA77] via-[#F56040] to-[#D62976]">
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#E1306C] via-[#F77737] to-[#FCAF45]">
                 Instagram
               </span>
             </h1>
-            <p className="text-sm text-slate-400 mt-1">
+            <p className="text-sm text-slate-500 mt-1">
               Selecione um post para configurar o sorteio.
             </p>
           </div>
           <button
             onClick={() => router.push("/dashboard")}
-            className="rounded-full border border-white/15 bg-slate-950/90 px-4 py-2 text-xs text-slate-100 hover:bg-slate-900/80 transition"
+            className="rounded-full border border-slate-300 bg-white px-4 py-2 text-xs text-slate-700 hover:bg-slate-50 transition"
           >
             Voltar ao dashboard
           </button>
         </header>
 
         {errorMsg ? (
-          <div className="rounded-xl border border-red-900/70 bg-red-950/40 px-4 py-3 text-sm text-red-200">
+          <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
             {errorMsg}
           </div>
         ) : posts.length === 0 ? (
-          <p className="text-sm text-slate-400">
-            Nenhuma postagem encontrada para esta conta.
-          </p>
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-6 text-center">
+            <p className="text-slate-600 font-medium">Nenhuma postagem encontrada</p>
+            <p className="text-sm text-slate-500 mt-1">
+              Esta conta não tem posts recentes ou a API não retornou mídia. Verifique se o perfil é Business/Criador e se há publicações.
+            </p>
+          </div>
         ) : (
           <section className="grid gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
             {posts.map((post) => (
               <Link
                 key={post.id}
-                href={`/sorteio/${post.id}?media_url=${encodeURIComponent(post.media_url)}&caption=${encodeURIComponent(post.caption ?? "")}`}
-                className="group rounded-2xl overflow-hidden border border-white/10 bg-slate-950/80 shadow-lg hover:shadow-xl transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F56040]"
+                href={`/sorteio/${post.id}?media_url=${encodeURIComponent(postImageUrl(post))}&caption=${encodeURIComponent(post.caption ?? "")}`}
+                className="group rounded-2xl overflow-hidden border border-slate-200 bg-white shadow-sm hover:shadow-md transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E1306C]"
               >
                 <div className="relative aspect-square">
                   <Image
-                    src={post.media_url}
+                    src={postImageUrl(post)}
                     alt={post.caption ?? "Post do Instagram"}
                     fill
                     className="object-cover group-hover:scale-[1.04] transition-transform"
                   />
                   <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-black/0 opacity-80" />
                   <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between text-[11px]">
-                    <span className="line-clamp-1 text-slate-50">
+                    <span className="line-clamp-1 text-white drop-shadow">
                       {post.caption || "Sem legenda"}
                     </span>
-                    <span className="rounded-full bg-black/70 px-2 py-1 text-[10px] uppercase tracking-wide">
+                    <span className="rounded-full bg-white/90 text-slate-800 px-2 py-1 text-[10px] font-medium uppercase tracking-wide">
                       Sortear
                     </span>
                   </div>

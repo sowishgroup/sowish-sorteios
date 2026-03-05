@@ -79,48 +79,48 @@ export function AuthForm() {
   };
 
   return (
-    <div className="w-full max-w-md rounded-2xl bg-slate-900/70 border border-slate-700/60 p-8 shadow-2xl backdrop-blur">
-      <h2 className="text-2xl font-semibold mb-2">
+    <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 shadow-lg">
+      <h2 className="text-2xl font-semibold mb-2 text-slate-900">
         {mode === "login" ? "Entre na sua conta" : "Crie sua conta"}
       </h2>
-      <p className="text-sm text-slate-400 mb-6">
+      <p className="text-sm text-slate-500 mb-6">
         Acesse o painel para criar e gerenciar seus sorteios no Instagram.
       </p>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
-          <label className="text-sm font-medium text-slate-200">E-mail</label>
+          <label className="text-sm font-medium text-slate-700">E-mail</label>
           <input
             type="email"
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
             placeholder="voce@exemplo.com"
           />
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-medium text-slate-200">Senha</label>
+          <label className="text-sm font-medium text-slate-700">Senha</label>
           <input
             type="password"
             required
             minLength={6}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
             placeholder="Mínimo de 6 caracteres"
           />
         </div>
 
         {infoMsg && (
-          <p className="text-sm text-emerald-300 bg-emerald-950/40 border border-emerald-700/60 rounded-md px-3 py-2">
+          <p className="text-sm text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-md px-3 py-2">
             {infoMsg}
           </p>
         )}
 
         {errorMsg && (
-          <p className="text-sm text-red-400 bg-red-950/40 border border-red-900/60 rounded-md px-3 py-2">
+          <p className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2">
             {errorMsg}
           </p>
         )}
@@ -128,7 +128,7 @@ export function AuthForm() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-semibold py-2.5 text-sm transition disabled:opacity-60 disabled:cursor-not-allowed"
+          className="w-full rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-2.5 text-sm transition disabled:opacity-60 disabled:cursor-not-allowed"
         >
           {loading
             ? "Processando..."
@@ -139,28 +139,28 @@ export function AuthForm() {
       </form>
 
       <div className="mt-4 flex items-center gap-2">
-        <div className="h-px flex-1 bg-slate-700" />
-        <span className="text-xs text-slate-400">ou</span>
-        <div className="h-px flex-1 bg-slate-700" />
+        <div className="h-px flex-1 bg-slate-200" />
+        <span className="text-xs text-slate-500">ou</span>
+        <div className="h-px flex-1 bg-slate-200" />
       </div>
 
       <button
         type="button"
         onClick={handleGoogleLogin}
         disabled={loading}
-        className="mt-4 w-full rounded-lg border border-slate-700 bg-slate-950 hover:bg-slate-900 text-sm py-2.5 flex items-center justify-center gap-2 transition disabled:opacity-60 disabled:cursor-not-allowed"
+        className="mt-4 w-full rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-sm py-2.5 flex items-center justify-center gap-2 transition disabled:opacity-60 disabled:cursor-not-allowed"
       >
         <span className="font-medium">Entrar com Google</span>
       </button>
 
-      <p className="mt-6 text-xs text-slate-400 text-center">
+      <p className="mt-6 text-xs text-slate-500 text-center">
         {mode === "login" ? (
           <>
             Ainda não tem conta?{" "}
             <button
               type="button"
               onClick={() => setMode("signup")}
-              className="text-emerald-400 hover:underline font-medium"
+              className="text-emerald-600 hover:underline font-medium"
             >
               Criar agora
             </button>
@@ -171,7 +171,7 @@ export function AuthForm() {
             <button
               type="button"
               onClick={() => setMode("login")}
-              className="text-emerald-400 hover:underline font-medium"
+              className="text-emerald-600 hover:underline font-medium"
             >
               Fazer login
             </button>
