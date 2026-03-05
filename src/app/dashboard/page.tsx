@@ -72,6 +72,7 @@ export default function DashboardPage() {
       "instagram_basic",
       "instagram_manage_comments",
       "pages_show_list",
+      "pages_read_engagement",
     ].join(",");
 
     const authUrl = `https://www.facebook.com/v20.0/dialog/oauth?client_id=${encodeURIComponent(

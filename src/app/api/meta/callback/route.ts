@@ -142,24 +142,48 @@ export async function GET(req: NextRequest) {
 
     const supabaseServer = getSupabaseServer();
 
-    // 5) Salvar de forma segura no Supabase na tabela user_instagram_accounts
-    const { error: upsertError } = await supabaseServer
+    // 5) Salvar no Supabase: select depois update ou insert (não depende de UNIQUE em user_id)
+    const userId = String(state).trim();
+    const { data: existing } = await supabaseServer
       .from("user_instagram_accounts")
-      .upsert(
-        {
-          user_id: state,
+      .select("user_id")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (existing) {
+      const { error: updateError } = await supabaseServer
+        .from("user_instagram_accounts")
+        .update({
           instagram_business_account_id: instagramBusinessAccountId,
           long_lived_token: longLivedToken,
-        },
-        { onConflict: "user_id" }
-      );
+        })
+        .eq("user_id", userId);
 
-    if (upsertError) {
-      console.error("Erro ao salvar dados no Supabase:", upsertError);
-      return NextResponse.redirect(
-        `${baseUrl}/dashboard?instagram_error=supabase_upsert_failed`
-      );
+      if (updateError) {
+        console.error("Erro ao atualizar conta Instagram no Supabase:", updateError);
+        return NextResponse.redirect(
+          `${baseUrl}/dashboard?instagram_error=supabase_upsert_failed`
+        );
+      }
+    } else {
+      const { error: insertError } = await supabaseServer
+        .from("user_instagram_accounts")
+        .insert({
+          user_id: userId,
+          instagram_business_account_id: instagramBusinessAccountId,
+          long_lived_token: longLivedToken,
+        });
+
+      if (insertError) {
+        console.error("Erro ao inserir conta Instagram no Supabase:", insertError);
+        return NextResponse.redirect(
+          `${baseUrl}/dashboard?instagram_error=supabase_upsert_failed`
+        );
+      }
     }
+
+    // Log para diagnóstico em produção (só início do id)
+    console.log("[meta/callback] Instagram vinculado para user_id:", userId.slice(0, 8) + "...");
 
     // 6) Redirecionar o usuário para a página de posts
     return NextResponse.redirect(`${baseUrl}/meus-posts`);

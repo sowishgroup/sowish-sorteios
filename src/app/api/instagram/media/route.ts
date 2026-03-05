@@ -69,6 +69,8 @@ export async function POST(req: NextRequest) {
     }
 
     if (!account) {
+      // Log para diagnóstico em produção (não expor id completo ao cliente)
+      console.log("[instagram/media] Nenhuma conta para user_id:", userId.slice(0, 8) + "...");
       return NextResponse.json(
         {
           message:
