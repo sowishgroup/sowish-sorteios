@@ -189,6 +189,14 @@ export async function POST(req: NextRequest) {
     const embaralhados = shuffle(filtered);
     const winners = embaralhados.slice(0, numWinners);
 
+    // 6) Registrar no histórico (sorteios_realizados)
+    const { error: histError } = await supabaseServer.from("sorteios_realizados").insert({
+      user_id: userId,
+      media_id: mediaId,
+      winners: winners.map((w) => ({ id: w.id, username: w.username, text: w.text })),
+    });
+    if (histError) console.error("Erro ao salvar histórico do sorteio:", histError);
+
     return NextResponse.json(
       {
         winners,

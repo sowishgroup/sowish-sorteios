@@ -35,6 +35,8 @@ export type InstagramMediaItem = {
   thumbnail_url?: string;
   permalink?: string;
   media_type?: string;
+  like_count?: number;
+  comments_count?: number;
 };
 
 export async function POST(req: NextRequest) {
@@ -86,7 +88,7 @@ export async function POST(req: NextRequest) {
 
     const url = `https://graph.facebook.com/v20.0/${encodeURIComponent(
       igAccountId
-    )}/media?fields=id,caption,media_url,thumbnail_url,permalink,media_type&limit=25&access_token=${encodeURIComponent(
+    )}/media?fields=id,caption,media_url,thumbnail_url,permalink,media_type,like_count,comments_count&limit=25&access_token=${encodeURIComponent(
       token
     )}`;
 
@@ -113,6 +115,8 @@ export async function POST(req: NextRequest) {
       thumbnail_url: m.thumbnail_url != null ? String(m.thumbnail_url) : undefined,
       permalink: m.permalink != null ? String(m.permalink) : undefined,
       media_type: m.media_type != null ? String(m.media_type) : undefined,
+      like_count: typeof m.like_count === "number" ? m.like_count : undefined,
+      comments_count: typeof m.comments_count === "number" ? m.comments_count : undefined,
     }));
 
     return NextResponse.json({ data: list }, { status: 200 });

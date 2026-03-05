@@ -12,6 +12,8 @@ type InstagramMedia = {
   thumbnail_url?: string;
   permalink?: string;
   media_type?: string;
+  like_count?: number;
+  comments_count?: number;
 };
 
 export default function MeusPostsPage() {
@@ -115,10 +117,18 @@ export default function MeusPostsPage() {
           </div>
         ) : (
           <section className="grid gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-            {posts.map((post) => (
+            {posts.map((post) => {
+              const params = new URLSearchParams();
+              const imgUrl = postImageUrl(post);
+              if (imgUrl) params.set("media_url", imgUrl);
+              if (post.caption) params.set("caption", post.caption);
+              if (post.like_count != null) params.set("likes", String(post.like_count));
+              if (post.comments_count != null) params.set("comments", String(post.comments_count));
+              const qs = params.toString();
+              return (
               <Link
                 key={post.id}
-                href={`/sorteio/${post.id}?media_url=${encodeURIComponent(postImageUrl(post))}&caption=${encodeURIComponent(post.caption ?? "")}`}
+                href={`/sorteio/${post.id}${qs ? `?${qs}` : ""}`}
                 className="group rounded-2xl overflow-hidden border border-slate-200 bg-white shadow-sm hover:shadow-md transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E1306C]"
               >
                 <div className="relative aspect-square bg-slate-100">
@@ -140,7 +150,8 @@ export default function MeusPostsPage() {
                   </div>
                 </div>
               </Link>
-            ))}
+            );
+            })}
           </section>
         )}
       </div>

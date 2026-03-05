@@ -1,8 +1,5 @@
--- ============================================================
 -- Sowish Sorteios - Schema do Supabase
--- Execute este script no SQL Editor do seu projeto Supabase
--- (Dashboard Supabase → SQL Editor → New query → Cole e rode)
--- ============================================================
+-- Cole este arquivo no SQL Editor do Supabase e execute (Run)
 
 -- 1) Tabela de perfis (conta do usuário: nome, avatar, role admin)
 CREATE TABLE IF NOT EXISTS public.profiles (
@@ -12,10 +9,10 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   role text DEFAULT NULL
 );
 
--- 2) Créditos por usuário (1 crédito = 1 sorteio)
+-- 2) Créditos por usuário (1 crédito = 1 sorteio). Novos usuários começam com 2 créditos.
 CREATE TABLE IF NOT EXISTS public.user_credits (
   user_id uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-  saldo_creditos integer NOT NULL DEFAULT 0
+  saldo_creditos integer NOT NULL DEFAULT 2
 );
 
 -- 3) Contas do Instagram vinculadas (uma por usuário)
@@ -37,13 +34,21 @@ CREATE TABLE IF NOT EXISTS public.announcements (
   created_at timestamptz DEFAULT now()
 );
 
+-- 5) Histórico de sorteios realizados (para "Últimos sorteios")
+CREATE TABLE IF NOT EXISTS public.sorteios_realizados (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  media_id text NOT NULL,
+  winners jsonb NOT NULL DEFAULT '[]',
+  created_at timestamptz DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_sorteios_user_created ON public.sorteios_realizados(user_id, created_at DESC);
+
 -- Índices para buscas comuns
 CREATE INDEX IF NOT EXISTS idx_user_instagram_user_id ON public.user_instagram_accounts(user_id);
 CREATE INDEX IF NOT EXISTS idx_announcements_active ON public.announcements(is_active) WHERE is_active = true;
 
--- ============================================================
 -- Trigger: criar perfil automaticamente quando um usuário se cadastrar
--- ============================================================
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS trigger AS $$
 BEGIN
@@ -54,6 +59,9 @@ BEGIN
     NEW.raw_user_meta_data->>'avatar_url'
   )
   ON CONFLICT (id) DO NOTHING;
+  INSERT INTO public.user_credits (user_id, saldo_creditos)
+  VALUES (NEW.id, 2)
+  ON CONFLICT (user_id) DO NOTHING;
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
@@ -63,13 +71,12 @@ CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 
--- ============================================================
--- RLS (Row Level Security) – usuários só acessam seus dados
--- ============================================================
+-- RLS (Row Level Security) - usuarios so acessam seus dados
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.user_credits ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.user_instagram_accounts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.announcements ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.sorteios_realizados ENABLE ROW LEVEL SECURITY;
 
 -- Profiles: usuário vê e atualiza só o próprio perfil
 DROP POLICY IF EXISTS "Users can read own profile" ON public.profiles;
@@ -99,13 +106,16 @@ DROP POLICY IF EXISTS "Authenticated can read active announcements" ON public.an
 CREATE POLICY "Authenticated can read active announcements" ON public.announcements
   FOR SELECT USING (auth.role() = 'authenticated' AND is_active = true);
 
+-- Sorteios realizados: usuário vê só os próprios
+DROP POLICY IF EXISTS "Users can read own sorteios" ON public.sorteios_realizados;
+CREATE POLICY "Users can read own sorteios" ON public.sorteios_realizados
+  FOR SELECT USING (auth.uid() = user_id);
+
 -- As APIs do app usam SERVICE_ROLE_KEY e ignoram RLS para escrever em todas as tabelas.
 -- Para INSERT/UPDATE/DELETE via service role funcionar, não criamos políticas de escrita
 -- para o cliente; o backend faz as escritas.
 
--- ============================================================
 -- Storage: bucket para fotos de perfil (avatars)
--- ============================================================
 INSERT INTO storage.buckets (id, name, public)
 VALUES ('avatars', 'avatars', true)
 ON CONFLICT (id) DO NOTHING;
@@ -121,11 +131,7 @@ CREATE POLICY "Public can view avatars" ON storage.objects
   FOR SELECT TO public
   USING (bucket_id = 'avatars');
 
--- ============================================================
--- BACKFILL: criar perfil e créditos para usuários que JÁ EXISTIAM
--- (quem se cadastrou antes das tabelas existirem não ganhou linha no trigger)
--- Rode isto após o schema; pode rodar de novo sem problema.
--- ============================================================
+-- BACKFILL: criar perfil e creditos para usuarios que ja existiam
 INSERT INTO public.profiles (id, full_name, avatar_url)
 SELECT
   u.id,
@@ -141,7 +147,5 @@ FROM auth.users
 WHERE id NOT IN (SELECT user_id FROM public.user_credits)
 ON CONFLICT (user_id) DO NOTHING;
 
--- ============================================================
--- Tornar um usuário ADMIN (rode trocando o e-mail pelo do usuário):
+-- Para tornar um usuario ADMIN, rode (troque o email):
 -- UPDATE public.profiles SET role = 'admin' WHERE id = (SELECT id FROM auth.users WHERE email = 'seu-email@exemplo.com');
--- ============================================================

@@ -22,10 +22,17 @@ export default function SorteioPage() {
   const searchParams = useSearchParams();
 
   const mediaId = params.media_id;
-  const mediaUrl = searchParams.get("media_url") ?? "";
-  const caption = searchParams.get("caption") ?? "";
+  const mediaUrlFromQuery = searchParams.get("media_url") ?? "";
+  const captionFromQuery = searchParams.get("caption") ?? "";
+  const likesFromQuery = searchParams.get("likes");
+  const commentsFromQuery = searchParams.get("comments");
 
   const [userId, setUserId] = useState<string | null>(null);
+  const [mediaUrl, setMediaUrl] = useState(mediaUrlFromQuery);
+  const [caption, setCaption] = useState(captionFromQuery);
+  const [likeCount, setLikeCount] = useState<number | null>(likesFromQuery ? parseInt(likesFromQuery, 10) : null);
+  const [commentsCount, setCommentsCount] = useState<number | null>(commentsFromQuery ? parseInt(commentsFromQuery, 10) : null);
+  const [participantsCount, setParticipantsCount] = useState<number | null>(null);
   const [numWinners, setNumWinners] = useState(1);
   const [keyword, setKeyword] = useState("");
   const [uniquePerUser, setUniquePerUser] = useState(true);
@@ -44,22 +51,32 @@ export default function SorteioPage() {
   const rollInterval = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
-    const loadUser = async () => {
-      const {
-        data: { user },
-        error,
-      } = await supabase.auth.getUser();
-
-      if (error || !user) {
+    const loadUserAndMedia = async () => {
+      const { data: { session }, error } = await supabase.auth.getSession();
+      if (error || !session?.user) {
         setErrorMsg("Você precisa estar logado para realizar um sorteio.");
         return;
       }
-
-      setUserId(user.id);
+      setUserId(session.user.id);
+      if (!mediaId) return;
+      try {
+        const res = await fetch(`/api/instagram/media/${encodeURIComponent(mediaId)}`, {
+          headers: { Authorization: `Bearer ${session.access_token}` },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.media_url) setMediaUrl(data.media_url);
+          if (data.caption != null) setCaption(data.caption ?? "");
+          setLikeCount(typeof data.like_count === "number" ? data.like_count : null);
+          setCommentsCount(typeof data.comments_count === "number" ? data.comments_count : null);
+        }
+      } catch (_) {
+        if (!mediaUrl) setMediaUrl(mediaUrlFromQuery);
+        if (!caption && captionFromQuery) setCaption(captionFromQuery);
+      }
     };
-
-    loadUser();
-  }, []);
+    loadUserAndMedia();
+  }, [mediaId]);
 
   // Roleta: ciclo rápido de nomes, depois desacelera e para na revelação
   useEffect(() => {
@@ -152,6 +169,7 @@ export default function SorteioPage() {
 
       setWinners(win);
       setParticipants(part.length > 0 ? part : win);
+      setParticipantsCount(part.length > 0 ? part.length : win.length);
       setRollingIndex(0);
       setRolling(true);
     } catch (err) {
@@ -174,9 +192,13 @@ export default function SorteioPage() {
   }, [winners]);
 
   const downloadResultImage = useCallback(async () => {
-    const node = resultPrintRef.current ?? resultImageRef.current;
+    const node = resultPrintRef.current;
     if (!node) return;
+    const origTop = (node as HTMLElement).style.top;
     try {
+      (node as HTMLElement).style.top = "0";
+      (node as HTMLElement).style.zIndex = "9999";
+      await new Promise((r) => setTimeout(r, 100));
       const dataUrl = await toPng(node, {
         width: 1080,
         pixelRatio: 2,
@@ -189,6 +211,9 @@ export default function SorteioPage() {
     } catch (err) {
       console.error("Erro ao gerar imagem:", err);
       alert("Não foi possível gerar a imagem. Tente novamente.");
+    } finally {
+      (node as HTMLElement).style.top = origTop;
+      (node as HTMLElement).style.zIndex = "";
     }
   }, []);
 
@@ -316,16 +341,29 @@ export default function SorteioPage() {
                 )}
               </div>
 
+              {(likeCount != null || commentsCount != null || participantsCount != null) && (
+                <p className="text-center text-sm text-slate-600 mt-3">
+                  {likeCount != null && <span>{likeCount.toLocaleString("pt-BR")} curtidas</span>}
+                  {likeCount != null && commentsCount != null && " · "}
+                  {commentsCount != null && <span>{commentsCount.toLocaleString("pt-BR")} comentários</span>}
+                  {participantsCount != null && (
+                    <span className="block mt-1 font-medium">
+                      {participantsCount.toLocaleString("pt-BR")} participantes no sorteio
+                    </span>
+                  )}
+                </p>
+              )}
+
               <p className="text-center text-xs text-slate-500 mt-4">
                 Sowish Sorteios · Resultado oficial do sorteio
               </p>
             </div>
 
-            {/* Card oculto só para download: sem img externa (evita CORS no canvas) */}
+            {/* Card para download: fora da tela mas renderizável (sem img externa = sem CORS) */}
             <div
               ref={resultPrintRef}
-              className="rounded-2xl border border-slate-200 bg-slate-50 p-6 sm:p-8 max-w-2xl box-border absolute left-[-9999px] top-0 pointer-events-none opacity-0"
-              style={{ minHeight: 400, width: 540 }}
+              className="rounded-2xl border border-slate-200 bg-slate-50 p-6 sm:p-8 box-border"
+              style={{ position: "fixed", left: 0, top: "-9999px", width: 540, minHeight: 400 }}
               aria-hidden
             >
               <div className="text-center mb-6">
@@ -368,6 +406,16 @@ export default function SorteioPage() {
               <div className="relative w-full aspect-square max-w-sm mx-auto rounded-xl overflow-hidden border border-slate-200 bg-slate-200 flex items-center justify-center">
                 <span className="text-slate-500 text-sm">Post do sorteio</span>
               </div>
+              {(likeCount != null || commentsCount != null || participantsCount != null) && (
+                <p className="text-center text-sm text-slate-600 mt-3">
+                  {likeCount != null && <span>{likeCount.toLocaleString("pt-BR")} curtidas</span>}
+                  {likeCount != null && commentsCount != null && " · "}
+                  {commentsCount != null && <span>{commentsCount.toLocaleString("pt-BR")} comentários</span>}
+                  {participantsCount != null && (
+                    <span className="block mt-1 font-medium">{participantsCount.toLocaleString("pt-BR")} participantes</span>
+                  )}
+                </p>
+              )}
               <p className="text-center text-xs text-slate-500 mt-4">
                 Sowish Sorteios · Resultado oficial do sorteio
               </p>
@@ -410,6 +458,13 @@ export default function SorteioPage() {
                   </div>
                 )}
                 <div className="p-4 border-t border-slate-200">
+                  {(likeCount != null || commentsCount != null) && (
+                    <p className="text-xs text-slate-500 mb-2">
+                      {likeCount != null && <span>{likeCount.toLocaleString("pt-BR")} curtidas</span>}
+                      {likeCount != null && commentsCount != null && " · "}
+                      {commentsCount != null && <span>{commentsCount.toLocaleString("pt-BR")} comentários</span>}
+                    </p>
+                  )}
                   <p className="text-xs text-slate-600 line-clamp-3">
                     {caption || "Post sem legenda."}
                   </p>
