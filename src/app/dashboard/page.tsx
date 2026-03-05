@@ -59,9 +59,9 @@ export default function DashboardPage() {
     const redirectUri =
       typeof window !== "undefined"
         ? `${window.location.origin}/api/meta/callback`
-        : process.env.NEXT_PUBLIC_FACEBOOK_REDIRECT_URI;
+        : (process.env.NEXT_PUBLIC_FACEBOOK_REDIRECT_URI ?? "");
 
-    if (!appId) {
+    if (!appId || !redirectUri) {
       alert(
         "Configuração do Facebook App não encontrada. Verifique NEXT_PUBLIC_FACEBOOK_APP_ID."
       );
