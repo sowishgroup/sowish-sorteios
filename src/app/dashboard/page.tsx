@@ -55,11 +55,15 @@ export default function DashboardPage() {
     }
 
     const appId = process.env.NEXT_PUBLIC_FACEBOOK_APP_ID;
-    const redirectUri = process.env.NEXT_PUBLIC_FACEBOOK_REDIRECT_URI;
+    // Usa sempre o domínio atual (produção ou localhost), assim não depende do valor no build
+    const redirectUri =
+      typeof window !== "undefined"
+        ? `${window.location.origin}/api/meta/callback`
+        : process.env.NEXT_PUBLIC_FACEBOOK_REDIRECT_URI;
 
-    if (!appId || !redirectUri) {
+    if (!appId) {
       alert(
-        "Configuração do Facebook App não encontrada. Verifique as variáveis NEXT_PUBLIC_FACEBOOK_APP_ID e NEXT_PUBLIC_FACEBOOK_REDIRECT_URI."
+        "Configuração do Facebook App não encontrada. Verifique NEXT_PUBLIC_FACEBOOK_APP_ID."
       );
       return;
     }
