@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
@@ -122,12 +121,13 @@ export default function MeusPostsPage() {
                 href={`/sorteio/${post.id}?media_url=${encodeURIComponent(postImageUrl(post))}&caption=${encodeURIComponent(post.caption ?? "")}`}
                 className="group rounded-2xl overflow-hidden border border-slate-200 bg-white shadow-sm hover:shadow-md transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E1306C]"
               >
-                <div className="relative aspect-square">
-                  <Image
+                <div className="relative aspect-square bg-slate-100">
+                  {/* img nativo para URLs do Instagram (CDN com vários subdomínios) */}
+                  <img
                     src={postImageUrl(post)}
                     alt={post.caption ?? "Post do Instagram"}
-                    fill
-                    className="object-cover group-hover:scale-[1.04] transition-transform"
+                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-[1.04] transition-transform"
+                    loading="lazy"
                   />
                   <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-black/0 opacity-80" />
                   <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between text-[11px]">

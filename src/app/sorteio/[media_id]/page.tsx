@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useParams, useSearchParams } from "next/navigation";
-import Image from "next/image";
 import Confetti from "react-confetti";
 import { toPng } from "html-to-image";
 import { supabase } from "@/lib/supabaseClient";
@@ -39,6 +38,8 @@ export default function SorteioPage() {
   const [showReveal, setShowReveal] = useState(false);
 
   const resultImageRef = useRef<HTMLDivElement>(null);
+  /** Ref do card sem imagem externa, só para captura (evita CORS no download) */
+  const resultPrintRef = useRef<HTMLDivElement>(null);
   const rollStartTime = useRef<number>(0);
   const rollInterval = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -173,9 +174,10 @@ export default function SorteioPage() {
   }, [winners]);
 
   const downloadResultImage = useCallback(async () => {
-    if (!resultImageRef.current) return;
+    const node = resultPrintRef.current ?? resultImageRef.current;
+    if (!node) return;
     try {
-      const dataUrl = await toPng(resultImageRef.current, {
+      const dataUrl = await toPng(node, {
         width: 1080,
         pixelRatio: 2,
         backgroundColor: "#f8fafc",
@@ -186,6 +188,7 @@ export default function SorteioPage() {
       a.click();
     } catch (err) {
       console.error("Erro ao gerar imagem:", err);
+      alert("Não foi possível gerar a imagem. Tente novamente.");
     }
   }, []);
 
@@ -243,6 +246,7 @@ export default function SorteioPage() {
         {/* Tela de revelação: ganhador(es) + compartilhar */}
         {showReveal && winners.length > 0 && (
           <section className="space-y-6">
+            {/* Card visível: mostra a imagem real do post */}
             <div
               ref={resultImageRef}
               className="rounded-2xl border border-slate-200 bg-slate-50/80 p-6 sm:p-8 max-w-2xl mx-auto shadow-lg"
@@ -287,17 +291,83 @@ export default function SorteioPage() {
                 ))}
               </div>
 
-              {mediaUrl && (
-                <div className="relative w-full aspect-square max-w-sm mx-auto rounded-xl overflow-hidden border border-slate-200">
-                  <Image
+              <div className="relative w-full aspect-square max-w-sm mx-auto rounded-xl overflow-hidden border border-slate-200 bg-slate-200">
+                {mediaUrl ? (
+                  <img
                     src={mediaUrl}
                     alt="Post do sorteio"
-                    fill
-                    className="object-cover"
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).style.display = "none";
+                      const parent = (e.target as HTMLImageElement).parentElement;
+                      if (parent && !parent.querySelector(".post-image-fallback")) {
+                        const fallback = document.createElement("div");
+                        fallback.className = "post-image-fallback absolute inset-0 flex items-center justify-center text-slate-500 text-sm";
+                        fallback.textContent = "Post do sorteio";
+                        parent.appendChild(fallback);
+                      }
+                    }}
                   />
-                </div>
-              )}
+                ) : null}
+                {!mediaUrl && (
+                  <div className="absolute inset-0 flex items-center justify-center text-slate-500 text-sm">
+                    Post do sorteio
+                  </div>
+                )}
+              </div>
 
+              <p className="text-center text-xs text-slate-500 mt-4">
+                Sowish Sorteios · Resultado oficial do sorteio
+              </p>
+            </div>
+
+            {/* Card oculto só para download: sem img externa (evita CORS no canvas) */}
+            <div
+              ref={resultPrintRef}
+              className="rounded-2xl border border-slate-200 bg-slate-50 p-6 sm:p-8 max-w-2xl box-border absolute left-[-9999px] top-0 pointer-events-none opacity-0"
+              style={{ minHeight: 400, width: 540 }}
+              aria-hidden
+            >
+              <div className="text-center mb-6">
+                <p className="text-lg sm:text-xl font-semibold text-[#E1306C] mb-1">
+                  Parabéns!
+                </p>
+                {winners.length === 1 ? (
+                  <p className="text-xl sm:text-2xl text-slate-800">
+                    O ganhador(a) é{" "}
+                    <span className="font-bold text-[#E1306C]">
+                      @{winners[0].username}
+                    </span>
+                  </p>
+                ) : (
+                  <p className="text-xl sm:text-2xl text-slate-800">
+                    Os ganhadores são:
+                  </p>
+                )}
+              </div>
+              <div className="flex flex-wrap justify-center gap-4 sm:gap-6 mb-6">
+                {winners.map((w) => (
+                  <div
+                    key={w.id}
+                    className="flex flex-col items-center text-center"
+                  >
+                    <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-gradient-to-br from-[#E1306C] via-[#F77737] to-[#FCAF45] p-[3px] shadow-lg flex items-center justify-center">
+                      <div className="w-full h-full rounded-full bg-white flex items-center justify-center text-3xl sm:text-4xl font-bold text-slate-700">
+                        {(w.username || "?").charAt(0).toUpperCase()}
+                      </div>
+                    </div>
+                    <p className="mt-2 font-semibold text-slate-800">
+                      @{w.username}
+                    </p>
+                    <p className="text-xs text-slate-500 line-clamp-2 max-w-[200px]">
+                      {w.text}
+                    </p>
+                  </div>
+                ))}
+              </div>
+              <div className="relative w-full aspect-square max-w-sm mx-auto rounded-xl overflow-hidden border border-slate-200 bg-slate-200 flex items-center justify-center">
+                <span className="text-slate-500 text-sm">Post do sorteio</span>
+              </div>
               <p className="text-center text-xs text-slate-500 mt-4">
                 Sowish Sorteios · Resultado oficial do sorteio
               </p>
@@ -328,11 +398,10 @@ export default function SorteioPage() {
               <div className="rounded-2xl overflow-hidden border border-slate-200 bg-slate-50/80 shadow-sm">
                 {mediaUrl ? (
                   <div className="relative w-full aspect-square">
-                    <Image
+                    <img
                       src={mediaUrl}
                       alt={caption || "Post do Instagram"}
-                      fill
-                      className="object-cover"
+                      className="absolute inset-0 w-full h-full object-cover"
                     />
                   </div>
                 ) : (
