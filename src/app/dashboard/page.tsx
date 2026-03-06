@@ -19,6 +19,19 @@ type InstagramMedia = {
   media_type?: string;
 };
 
+type ActivityDraw = {
+  id: string;
+  media_id: string;
+  winners: { username?: string }[];
+  created_at: string;
+};
+
+type ActivitySummary = {
+  totalDraws: number;
+  totalWinners: number;
+  lastDraws: ActivityDraw[];
+};
+
 export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [userEmail, setUserEmail] = useState<string | null>(null);
@@ -27,6 +40,7 @@ export default function DashboardPage() {
   const [announcement, setAnnouncement] = useState<Announcement | null>(null);
   const [recentPosts, setRecentPosts] = useState<InstagramMedia[]>([]);
   const [postsError, setPostsError] = useState<string | null>(null);
+  const [activity, setActivity] = useState<ActivitySummary | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -65,24 +79,39 @@ export default function DashboardPage() {
       const name = (profileRes.data as { full_name: string | null } | null)?.full_name?.trim();
       setDisplayName(name || null);
 
-      // Buscar posts recentes para já sugerir sorteios na tela inicial
+      // Buscar posts recentes e atividade do usuário para já sugerir sorteios na tela inicial
       try {
-        const res = await fetch("/api/instagram/media", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${data.session.access_token}`,
-          },
-          body: JSON.stringify({ userId: data.session.user.id }),
-        });
-        const json = await res.json();
-        if (Array.isArray(json.data)) {
-          setRecentPosts((json.data as InstagramMedia[]).slice(0, 4));
-        } else if (json.message) {
-          setPostsError(json.message as string);
+        const [postsRes, activityRes] = await Promise.all([
+          fetch("/api/instagram/media", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${data.session.access_token}`,
+            },
+            body: JSON.stringify({ userId: data.session.user.id }),
+          }),
+          fetch("/api/dashboard/activity", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ userId: data.session.user.id }),
+          }),
+        ]);
+
+        const postsJson = await postsRes.json();
+        if (Array.isArray(postsJson.data)) {
+          setRecentPosts((postsJson.data as InstagramMedia[]).slice(0, 4));
+        } else if (postsJson.message) {
+          setPostsError(postsJson.message as string);
+        }
+
+        if (activityRes.ok) {
+          const actJson = (await activityRes.json()) as ActivitySummary;
+          setActivity(actJson);
         }
       } catch (err) {
-        console.error("Erro ao carregar posts recentes no dashboard:", err);
+        console.error("Erro ao carregar posts/atividade no dashboard:", err);
         setPostsError("Não foi possível carregar seus posts agora.");
       }
 
@@ -198,29 +227,61 @@ export default function DashboardPage() {
             <p className="text-xs font-semibold text-slate-700">
               Atividade em tempo real
             </p>
-            <div className="space-y-3 text-[11px] text-slate-600">
-              <div className="flex items-center gap-2">
-                <span className="h-1.5 w-1.5 rounded-full bg-[#E1306C]" />
-                <span>
-                  Em breve: últimos sorteios realizados e vencedores exibidos
-                  aqui.
-                </span>
+            {activity ? (
+              <div className="space-y-3 text-[11px] text-slate-600">
+                <p>
+                  Você já realizou{" "}
+                  <span className="font-semibold text-slate-800">
+                    {activity.totalDraws}
+                  </span>{" "}
+                  sorteio(s) com{" "}
+                  <span className="font-semibold text-slate-800">
+                    {activity.totalWinners}
+                  </span>{" "}
+                  ganhador(es) ao todo.
+                </p>
+                {activity.lastDraws.length > 0 && (
+                  <div className="space-y-2">
+                    <p className="font-semibold text-slate-700">
+                      Últimos sorteios:
+                    </p>
+                    <ul className="space-y-1.5">
+                      {activity.lastDraws.map((d) => (
+                        <li
+                          key={d.id}
+                          className="flex flex-col rounded-lg border border-slate-200/80 bg-white/80 px-2.5 py-2"
+                        >
+                          <span className="text-[10px] text-slate-500">
+                            {new Date(d.created_at).toLocaleString("pt-BR")}
+                          </span>
+                          <span className="text-[11px] text-slate-700">
+                            Post ID:{" "}
+                            <span className="font-mono text-[10px]">
+                              {d.media_id}
+                            </span>
+                          </span>
+                          {Array.isArray(d.winners) && d.winners.length > 0 && (
+                            <span className="text-[11px] text-slate-600">
+                              Ganhador(es):{" "}
+                              {d.winners
+                                .map((w) =>
+                                  w?.username ? `@${w.username}` : "@?",
+                                )
+                                .join(", ")}
+                            </span>
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </div>
-              <div className="flex items-center gap-2">
-                <span className="h-1.5 w-1.5 rounded-full bg-[#F77737]" />
-                <span>
-                  Acompanhe métricas de comentários, engajamento e taxa de
-                  conversão.
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="h-1.5 w-1.5 rounded-full bg-[#FCAF45]" />
-                <span>
-                  Planeje futuros sorteios alinhados com calendário da sua
-                  marca.
-                </span>
-              </div>
-            </div>
+            ) : (
+              <p className="text-[11px] text-slate-600">
+                Assim que você realizar seus primeiros sorteios, eles aparecem
+                aqui com data e ganhadores.
+              </p>
+            )}
           </aside>
         </section>
 
