@@ -222,7 +222,7 @@ export default function SorteioPage() {
   const currentParticipant = participants[rollingIndex];
 
   return (
-    <main className="min-h-screen bg-white text-slate-900">
+    <main className="min-h-screen text-slate-900">
       {(showReveal && winners.length > 0) && (
         <Confetti recycle={false} numberOfPieces={400} />
       )}

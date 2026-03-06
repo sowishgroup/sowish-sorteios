@@ -61,14 +61,14 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white text-slate-600">
+      <div className="min-h-screen flex items-center justify-center text-slate-600">
         Carregando...
       </div>
     );
   }
 
   return (
-    <main className="min-h-screen bg-white text-slate-900">
+    <main className="min-h-screen text-slate-900">
       <div className="mx-auto max-w-6xl px-6 py-8 space-y-8">
         <header className="border-b border-slate-200 pb-5">
           <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Painel</p>

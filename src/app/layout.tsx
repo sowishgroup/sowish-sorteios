@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import AppMenu from "@/components/AppMenu";
@@ -30,9 +31,23 @@ export default function RootLayout({
   return (
     <html lang="pt-BR">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-white text-slate-900 min-h-screen`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased text-slate-900 min-h-screen relative`}
       >
-        <AppMenu>{children}</AppMenu>
+        {/* Imagem de fundo em todo o aplicativo */}
+        <div className="fixed inset-0 z-0 bg-slate-200" aria-hidden>
+          <Image
+            src="/banner.png"
+            alt=""
+            fill
+            className="object-cover object-center"
+            priority
+            sizes="100vw"
+          />
+          <div className="absolute inset-0 bg-black/15" />
+        </div>
+        <div className="relative z-10 min-h-screen">
+          <AppMenu>{children}</AppMenu>
+        </div>
       </body>
     </html>
   );

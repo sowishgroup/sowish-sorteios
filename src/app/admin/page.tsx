@@ -139,7 +139,7 @@ export default function AdminPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-white text-slate-600 flex items-center justify-center">
+      <main className="min-h-screen text-slate-600 flex items-center justify-center">
         <p className="text-sm text-slate-500">Carregando painel admin...</p>
       </main>
     );
@@ -147,7 +147,7 @@ export default function AdminPage() {
 
   if (!isAdmin) {
     return (
-      <main className="min-h-screen bg-white text-slate-700 flex items-center justify-center">
+      <main className="min-h-screen text-slate-700 flex items-center justify-center">
         <p className="text-sm text-slate-500">
           Acesso negado. Esta área é restrita a administradores.
         </p>
@@ -156,7 +156,7 @@ export default function AdminPage() {
   }
 
   return (
-    <main className="min-h-screen bg-white text-slate-900">
+    <main className="min-h-screen text-slate-900">
       <div className="mx-auto max-w-6xl px-4 sm:px-6 py-8 space-y-6">
         <header className="space-y-1">
           <p className="text-[11px] uppercase tracking-[0.3em] text-slate-500">

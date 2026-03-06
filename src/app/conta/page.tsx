@@ -188,14 +188,14 @@ export default function ContaPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-white text-slate-700 flex items-center justify-center">
+      <main className="min-h-screen text-slate-700 flex items-center justify-center">
         <p className="text-sm text-slate-500">Carregando conta...</p>
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen bg-white text-slate-900">
+    <main className="min-h-screen text-slate-900">
       <div className="mx-auto max-w-5xl px-4 sm:px-6 py-8 space-y-6">
         <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>

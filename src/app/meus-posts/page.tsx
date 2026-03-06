@@ -72,14 +72,14 @@ export default function MeusPostsPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-white text-slate-700 flex items-center justify-center">
+      <main className="min-h-screen text-slate-700 flex items-center justify-center">
         <p className="text-sm text-slate-500">Carregando suas postagens...</p>
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen bg-white text-slate-900">
+    <main className="min-h-screen text-slate-900">
       <div className="mx-auto max-w-6xl px-6 py-8 space-y-6">
         <header className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>

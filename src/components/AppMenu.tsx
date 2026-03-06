@@ -75,8 +75,8 @@ export default function AppMenu({ children }: { children: React.ReactNode }) {
   if (!showMenu) return <>{children}</>;
 
   return (
-    <div className="min-h-screen bg-white text-slate-900 flex flex-col">
-      <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur">
+    <div className="min-h-screen bg-white/90 backdrop-blur-sm text-slate-900 flex flex-col">
+      <header className="sticky top-0 z-40 border-b border-slate-200/80 bg-white/90 backdrop-blur">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 flex h-14 items-center justify-between gap-4">
           <Link href="/dashboard" className="flex items-center gap-2 shrink-0">
             <Image src="/logo.png" alt="Sowish" width={36} height={36} className="object-contain" />

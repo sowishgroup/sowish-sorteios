@@ -6,23 +6,7 @@ const LOGO_BLUE = "#2563eb";
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-white text-slate-900 relative">
-      {/* Plano de fundo: imagem apenas no desktop */}
-      <div
-        className="hidden lg:block absolute inset-0 bg-slate-200"
-        aria-hidden
-      >
-        <Image
-          src="/banner.png"
-          alt=""
-          fill
-          className="object-cover object-center"
-          priority
-          sizes="100vw"
-        />
-        <div className="absolute inset-0 bg-black/15" />
-      </div>
-
+    <main className="min-h-screen text-slate-900 relative">
       <div className="relative mx-auto flex max-w-6xl flex-col px-6 py-10 lg:flex-row lg:items-center lg:gap-16 lg:min-h-screen">
         <section className="flex-1 space-y-7 rounded-2xl bg-white/85 backdrop-blur-sm p-6 lg:p-8 shadow-lg border border-white/50">
           <div className="flex items-center gap-3">
