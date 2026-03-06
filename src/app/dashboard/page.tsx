@@ -34,7 +34,7 @@ export default function DashboardPage() {
       const { data, error } = await supabase.auth.getSession();
 
       if (error || !data.session) {
-        router.replace(\"/\");
+        router.replace("/");
         return;
       }
 
@@ -42,21 +42,21 @@ export default function DashboardPage() {
 
       const [annRes, credRes, profileRes] = await Promise.all([
         supabase
-          .from(\"announcements\")
-          .select(\"id, title, body\")
-          .eq(\"is_active\", true)
-          .order(\"created_at\", { ascending: false })
+          .from("announcements")
+          .select("id, title, body")
+          .eq("is_active", true)
+          .order("created_at", { ascending: false })
           .limit(1)
           .maybeSingle(),
         supabase
-          .from(\"user_credits\")
-          .select(\"saldo_creditos\")
-          .eq(\"user_id\", data.session.user.id)
+          .from("user_credits")
+          .select("saldo_creditos")
+          .eq("user_id", data.session.user.id)
           .maybeSingle(),
         supabase
-          .from(\"profiles\")
-          .select(\"full_name\")
-          .eq(\"id\", data.session.user.id)
+          .from("profiles")
+          .select("full_name")
+          .eq("id", data.session.user.id)
           .maybeSingle(),
       ]);
 
@@ -67,10 +67,10 @@ export default function DashboardPage() {
 
       // Buscar posts recentes para já sugerir sorteios na tela inicial
       try {
-        const res = await fetch(\"/api/instagram/media\", {
-          method: \"POST\",
+        const res = await fetch("/api/instagram/media", {
+          method: "POST",
           headers: {
-            \"Content-Type\": \"application/json\",
+            "Content-Type": "application/json",
             Authorization: `Bearer ${data.session.access_token}`,
           },
           body: JSON.stringify({ userId: data.session.user.id }),
@@ -82,8 +82,8 @@ export default function DashboardPage() {
           setPostsError(json.message as string);
         }
       } catch (err) {
-        console.error(\"Erro ao carregar posts recentes no dashboard:\", err);
-        setPostsError(\"Não foi possível carregar seus posts agora.\");
+        console.error("Erro ao carregar posts recentes no dashboard:", err);
+        setPostsError("Não foi possível carregar seus posts agora.");
       }
 
       setLoading(false);
@@ -263,21 +263,21 @@ export default function DashboardPage() {
                       {img ? (
                         <img
                           src={img}
-                          alt={post.caption ?? \"Post do Instagram\"}
-                          className=\"absolute inset-0 h-full w-full object-cover group-hover:scale-[1.03] transition-transform\"
-                          loading=\"lazy\"
+                          alt={post.caption ?? "Post do Instagram"}
+                          className="absolute inset-0 h-full w-full object-cover group-hover:scale-[1.03] transition-transform"
+                          loading="lazy"
                         />
                       ) : (
-                        <div className=\"absolute inset-0 flex items-center justify-center text-[11px] text-slate-500\">
+                        <div className="absolute inset-0 flex items-center justify-center text-[11px] text-slate-500">
                           Post
                         </div>
                       )}
-                      <div className=\"pointer-events-none absolute inset-0 bg-gradient-to-t from-black/55 via-black/0 to-black/0\" />
-                      <div className=\"absolute bottom-2 left-2 right-2 flex items-center justify-between text-[10px]\">
-                        <span className=\"line-clamp-1 text-white drop-shadow\">
-                          {post.caption || \"Sem legenda\"}
+                      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/55 via-black/0 to-black/0" />
+                      <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between text-[10px]">
+                        <span className="line-clamp-1 text-white drop-shadow">
+                          {post.caption || "Sem legenda"}
                         </span>
-                        <span className=\"rounded-full bg-white/95 text-slate-800 px-2 py-0.5 font-semibold uppercase tracking-wide\">
+                        <span className="rounded-full bg-white/95 text-slate-800 px-2 py-0.5 font-semibold uppercase tracking-wide">
                           Sortear
                         </span>
                       </div>
