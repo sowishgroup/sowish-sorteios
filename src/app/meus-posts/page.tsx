@@ -20,6 +20,7 @@ export default function MeusPostsPage() {
   const [loading, setLoading] = useState(true);
   const [posts, setPosts] = useState<InstagramMedia[]>([]);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [visibleCount, setVisibleCount] = useState(8);
   const router = useRouter();
 
   useEffect(() => {
@@ -49,7 +50,9 @@ export default function MeusPostsPage() {
         const json = await res.json();
 
         if (Array.isArray(json.data)) {
-          setPosts(json.data as InstagramMedia[]);
+          const list = json.data as InstagramMedia[];
+          setPosts(list);
+          setVisibleCount(Math.min(8, list.length || 8));
           if (json.message && json.data.length === 0) {
             setErrorMsg(json.message);
           }
@@ -86,6 +89,8 @@ export default function MeusPostsPage() {
       </main>
     );
   }
+
+  const visiblePosts = posts.slice(0, visibleCount);
 
   return (
     <main className="min-h-screen text-slate-900">
@@ -125,8 +130,9 @@ export default function MeusPostsPage() {
             </p>
           </div>
         ) : (
-          <section className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-            {posts.map((post) => {
+          <>
+            <section className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+              {visiblePosts.map((post) => {
               const params = new URLSearchParams();
               const imgUrl = postImageUrl(post);
               if (imgUrl) params.set("media_url", imgUrl);
@@ -161,7 +167,23 @@ export default function MeusPostsPage() {
               </Link>
             );
             })}
-          </section>
+            </section>
+            {visibleCount < posts.length && (
+              <div className="flex justify-center pt-2">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setVisibleCount((current) =>
+                      Math.min(current + 8, posts.length),
+                    )
+                  }
+                  className="rounded-full border border-slate-300 bg-white px-4 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50 transition"
+                >
+                  Carregar mais posts
+                </button>
+              </div>
+            )}
+          </>
         )}
       </div>
     </main>
