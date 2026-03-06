@@ -46,7 +46,7 @@ export default function AppMenu({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (loading) return;
-    if (!session?.user && pathname !== "/" && !pathname.startsWith("/admin")) {
+    if (!session?.user && pathname !== "/" && !pathname.startsWith("/admin") && !pathname.startsWith("/auth/callback")) {
       router.replace("/");
       return;
     }

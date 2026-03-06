@@ -54,33 +54,8 @@ export function AuthForm() {
     }
   };
 
-  const handleGoogleLogin = async () => {
-    try {
-      setLoading(true);
-      setErrorMsg(null);
-      setInfoMsg(null);
-
-      const redirectTo =
-        typeof window !== "undefined"
-          ? `${window.location.origin}/dashboard`
-          : undefined;
-
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          redirectTo,
-        },
-      });
-
-      if (error) throw error;
-    } catch (err: any) {
-      setErrorMsg(err?.message ?? "Erro ao fazer login com Google.");
-      setLoading(false);
-    }
-  };
-
   return (
-    <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 shadow-lg">
+    <div className="w-full max-w-md rounded-2xl border border-slate-200/80 bg-white/85 backdrop-blur-sm p-8 shadow-lg">
       <div className="flex justify-center mb-4">
         <Image src="/logo.png" alt="Sowish" width={64} height={64} className="object-contain" />
       </div>
@@ -141,21 +116,6 @@ export function AuthForm() {
             : "Criar conta"}
         </button>
       </form>
-
-      <div className="mt-4 flex items-center gap-2">
-        <div className="h-px flex-1 bg-slate-200" />
-        <span className="text-xs text-slate-500">ou</span>
-        <div className="h-px flex-1 bg-slate-200" />
-      </div>
-
-      <button
-        type="button"
-        onClick={handleGoogleLogin}
-        disabled={loading}
-        className="mt-4 w-full rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-sm py-2.5 flex items-center justify-center gap-2 transition disabled:opacity-60 disabled:cursor-not-allowed"
-      >
-        <span className="font-medium">Entrar com Google</span>
-      </button>
 
       <p className="mt-6 text-xs text-slate-500 text-center">
         {mode === "login" ? (
