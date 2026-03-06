@@ -1,9 +1,9 @@
-\"use client\";
+"use client";
 
-import { useEffect, useState } from \"react\";
-import Link from \"next/link\";
-import { useRouter } from \"next/navigation\";
-import { supabase } from \"@/lib/supabaseClient\";
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabaseClient";
 
 type Announcement = {
   id: string;
