@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
@@ -80,6 +81,9 @@ export function AuthForm() {
 
   return (
     <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 shadow-lg">
+      <div className="flex justify-center mb-4">
+        <Image src="/logo.png" alt="Sowish" width={64} height={64} className="object-contain" />
+      </div>
       <h2 className="text-2xl font-semibold mb-2 text-slate-900">
         {mode === "login" ? "Entre na sua conta" : "Crie sua conta"}
       </h2>
@@ -177,6 +181,9 @@ export function AuthForm() {
             </button>
           </>
         )}
+      </p>
+      <p className="mt-4 text-center text-[11px] text-slate-400">
+        powered by Sowish Group
       </p>
     </div>
   );

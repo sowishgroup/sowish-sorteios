@@ -1,30 +1,38 @@
+import Image from "next/image";
 import { AuthForm } from "@/components/AuthForm";
-
-function InstaLogo() {
-  return (
-    <div className="relative h-12 w-12 rounded-3xl bg-gradient-to-tr from-[#FEDA77] via-[#D62976] to-[#4F5BD5] p-[2px] shadow-lg">
-      <div className="h-full w-full rounded-3xl bg-white flex items-center justify-center">
-        <div className="h-6 w-6 rounded-2xl border-2 border-slate-400 flex items-center justify-center">
-          <div className="h-2.5 w-2.5 rounded-full border-2 border-slate-400" />
-        </div>
-      </div>
-    </div>
-  );
-}
 
 export default function Home() {
   return (
     <main className="min-h-screen bg-white text-slate-900">
-      <div className="mx-auto flex min-h-screen max-w-6xl flex-col px-6 py-10 lg:flex-row lg:items-center lg:gap-16">
+      {/* Banner: responsivo (cobre bem em mobile e desktop) */}
+      <div className="relative w-full h-[200px] sm:h-[260px] md:h-[320px] lg:h-[380px] overflow-hidden">
+        <Image
+          src="/banner.png"
+          alt="Sowish Sorteios"
+          fill
+          className="object-cover object-center"
+          priority
+          sizes="100vw"
+        />
+        <div className="absolute inset-0 bg-black/20" />
+      </div>
+
+      <div className="mx-auto flex max-w-6xl flex-col px-6 py-10 lg:flex-row lg:items-center lg:gap-16">
         <section className="flex-1 space-y-7">
           <div className="flex items-center gap-3">
-            <InstaLogo />
+            <Image
+              src="/logo.png"
+              alt="Sowish"
+              width={56}
+              height={56}
+              className="h-12 w-12 object-contain"
+            />
             <div>
               <p className="text-xs uppercase tracking-[0.3em] text-slate-500">
                 Sowish Sorteios
               </p>
               <p className="text-[11px] text-slate-400">
-                powered by Instagram giveaways
+                powered by Sowish Group
               </p>
             </div>
           </div>

@@ -13,6 +13,7 @@ type Announcement = {
 export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [displayName, setDisplayName] = useState<string | null>(null);
   const [credits, setCredits] = useState<number | null>(null);
   const [announcement, setAnnouncement] = useState<Announcement | null>(null);
   const router = useRouter();
@@ -28,7 +29,7 @@ export default function DashboardPage() {
 
       setUserEmail(data.session.user.email ?? null);
 
-      const [annRes, credRes] = await Promise.all([
+      const [annRes, credRes, profileRes] = await Promise.all([
         supabase
           .from("announcements")
           .select("id, title, body")
@@ -41,10 +42,17 @@ export default function DashboardPage() {
           .select("saldo_creditos")
           .eq("user_id", data.session.user.id)
           .maybeSingle(),
+        supabase
+          .from("profiles")
+          .select("full_name")
+          .eq("id", data.session.user.id)
+          .maybeSingle(),
       ]);
 
       if (annRes.data) setAnnouncement(annRes.data as Announcement);
       setCredits(credRes.data?.saldo_creditos ?? 0);
+      const name = (profileRes.data as { full_name: string | null } | null)?.full_name?.trim();
+      setDisplayName(name || null);
       setLoading(false);
     };
 
@@ -65,14 +73,12 @@ export default function DashboardPage() {
         <header className="border-b border-slate-200 pb-5">
           <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Painel</p>
           <h1 className="text-2xl font-semibold text-slate-900 md:text-3xl mt-1">
-            Bem-vindo ao{" "}
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#E1306C] via-[#F77737] to-[#FCAF45]">
-              Sowish Sorteios
-            </span>
+            Seja bem-vindo{displayName ? `, ${displayName}` : ""}!
           </h1>
           {userEmail && (
             <p className="text-sm text-slate-500 mt-1">
-              Logado como <span className="font-medium text-slate-700">{userEmail}</span>
+              {displayName ? "Logado como " : ""}
+              <span className="font-medium text-slate-700">{userEmail}</span>
             </p>
           )}
         </header>

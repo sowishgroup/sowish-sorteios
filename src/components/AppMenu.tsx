@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -78,6 +79,7 @@ export default function AppMenu({ children }: { children: React.ReactNode }) {
       <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 flex h-14 items-center justify-between gap-4">
           <Link href="/dashboard" className="flex items-center gap-2 shrink-0">
+            <Image src="/logo.png" alt="Sowish" width={36} height={36} className="object-contain" />
             <span className="font-semibold bg-clip-text text-transparent bg-gradient-to-r from-[#E1306C] to-[#F77737]">
               Sowish Sorteios
             </span>

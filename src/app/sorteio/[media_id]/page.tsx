@@ -198,9 +198,11 @@ export default function SorteioPage() {
     try {
       (node as HTMLElement).style.top = "0";
       (node as HTMLElement).style.zIndex = "9999";
-      await new Promise((r) => setTimeout(r, 100));
+      await new Promise((r) => setTimeout(r, 150));
+      // Formato story 9:16 (1080x1920)
       const dataUrl = await toPng(node, {
         width: 1080,
+        height: 1920,
         pixelRatio: 2,
         backgroundColor: "#f8fafc",
       });
@@ -359,66 +361,73 @@ export default function SorteioPage() {
               </p>
             </div>
 
-            {/* Card para download: fora da tela mas renderizável (sem img externa = sem CORS) */}
+            {/* Card para download em formato STORY 9:16 (fora da tela, sem img externa = sem CORS) */}
             <div
               ref={resultPrintRef}
-              className="rounded-2xl border border-slate-200 bg-slate-50 p-6 sm:p-8 box-border"
-              style={{ position: "fixed", left: 0, top: "-9999px", width: 540, minHeight: 400 }}
+              className="flex flex-col rounded-2xl border border-slate-200 bg-slate-50 box-border text-slate-800"
+              style={{
+                position: "fixed",
+                left: 0,
+                top: "-9999px",
+                width: 540,
+                height: 960,
+              }}
               aria-hidden
             >
-              <div className="text-center mb-6">
-                <p className="text-lg sm:text-xl font-semibold text-[#E1306C] mb-1">
+              <div className="flex-1 flex flex-col justify-center items-center px-6 pt-8 pb-4">
+                <p className="text-2xl font-semibold text-[#E1306C] mb-2">
                   Parabéns!
                 </p>
                 {winners.length === 1 ? (
-                  <p className="text-xl sm:text-2xl text-slate-800">
+                  <p className="text-xl text-slate-800 text-center">
                     O ganhador(a) é{" "}
                     <span className="font-bold text-[#E1306C]">
                       @{winners[0].username}
                     </span>
                   </p>
                 ) : (
-                  <p className="text-xl sm:text-2xl text-slate-800">
+                  <p className="text-xl text-slate-800 text-center">
                     Os ganhadores são:
                   </p>
                 )}
               </div>
-              <div className="flex flex-wrap justify-center gap-4 sm:gap-6 mb-6">
+              <div className="flex flex-wrap justify-center gap-6 px-4 pb-4">
                 {winners.map((w) => (
                   <div
                     key={w.id}
                     className="flex flex-col items-center text-center"
                   >
-                    <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-gradient-to-br from-[#E1306C] via-[#F77737] to-[#FCAF45] p-[3px] shadow-lg flex items-center justify-center">
-                      <div className="w-full h-full rounded-full bg-white flex items-center justify-center text-3xl sm:text-4xl font-bold text-slate-700">
+                    <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#E1306C] via-[#F77737] to-[#FCAF45] p-[2px] shadow flex items-center justify-center">
+                      <div className="w-full h-full rounded-full bg-white flex items-center justify-center text-2xl font-bold text-slate-700">
                         {(w.username || "?").charAt(0).toUpperCase()}
                       </div>
                     </div>
-                    <p className="mt-2 font-semibold text-slate-800">
+                    <p className="mt-1 font-semibold text-slate-800 text-sm">
                       @{w.username}
-                    </p>
-                    <p className="text-xs text-slate-500 line-clamp-2 max-w-[200px]">
-                      {w.text}
                     </p>
                   </div>
                 ))}
               </div>
-              <div className="relative w-full aspect-square max-w-sm mx-auto rounded-xl overflow-hidden border border-slate-200 bg-slate-200 flex items-center justify-center">
-                <span className="text-slate-500 text-sm">Post do sorteio</span>
+              <div className="flex-1 min-h-[180px] flex items-center justify-center px-4 pb-4">
+                <div className="w-full max-w-[280px] aspect-square rounded-xl border-2 border-slate-300 bg-slate-200 flex items-center justify-center">
+                  <span className="text-slate-500 text-sm font-medium">Post do sorteio</span>
+                </div>
               </div>
-              {(likeCount != null || commentsCount != null || participantsCount != null) && (
-                <p className="text-center text-sm text-slate-600 mt-3">
-                  {likeCount != null && <span>{likeCount.toLocaleString("pt-BR")} curtidas</span>}
-                  {likeCount != null && commentsCount != null && " · "}
-                  {commentsCount != null && <span>{commentsCount.toLocaleString("pt-BR")} comentários</span>}
-                  {participantsCount != null && (
-                    <span className="block mt-1 font-medium">{participantsCount.toLocaleString("pt-BR")} participantes</span>
-                  )}
+              <div className="px-4 pb-3 text-center">
+                {(likeCount != null || commentsCount != null || participantsCount != null) && (
+                  <p className="text-xs text-slate-600 mb-1">
+                    {likeCount != null && <span>{likeCount.toLocaleString("pt-BR")} curtidas</span>}
+                    {likeCount != null && commentsCount != null && " · "}
+                    {commentsCount != null && <span>{commentsCount.toLocaleString("pt-BR")} comentários</span>}
+                    {participantsCount != null && (
+                      <span className="block mt-0.5 font-medium">{participantsCount.toLocaleString("pt-BR")} participantes</span>
+                    )}
+                  </p>
+                )}
+                <p className="text-[10px] text-slate-500">
+                  Sowish Sorteios · Resultado oficial do sorteio
                 </p>
-              )}
-              <p className="text-center text-xs text-slate-500 mt-4">
-                Sowish Sorteios · Resultado oficial do sorteio
-              </p>
+              </div>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-3 justify-center max-w-2xl mx-auto">
