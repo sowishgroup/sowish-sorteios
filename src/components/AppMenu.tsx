@@ -30,6 +30,7 @@ export default function AppMenu({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<ProfileInfo | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [hasAnnouncement, setHasAnnouncement] = useState(false);
+  const [latestAnnouncementId, setLatestAnnouncementId] = useState<string | null>(null);
 
   useEffect(() => {
     const load = async () => {
@@ -52,8 +53,17 @@ export default function AppMenu({ children }: { children: React.ReactNode }) {
         .from("announcements")
         .select("id")
         .eq("is_active", true)
+        .order("created_at", { ascending: false })
         .limit(1);
-      setHasAnnouncement((ann ?? []).length > 0);
+
+      let hasNew = false;
+      if (typeof window !== "undefined" && ann && ann.length > 0) {
+        const latest = String(ann[0].id);
+        setLatestAnnouncementId(latest);
+        const seen = window.localStorage.getItem("sowish_last_seen_announcement_id");
+        hasNew = !seen || seen !== latest;
+      }
+      setHasAnnouncement(hasNew);
       setLoading(false);
     };
     load();
@@ -84,6 +94,23 @@ export default function AppMenu({ children }: { children: React.ReactNode }) {
     router.push("/");
   };
 
+  const handleOpenNotifications = () => {
+    if (latestAnnouncementId && typeof window !== "undefined") {
+      window.localStorage.setItem("sowish_last_seen_announcement_id", latestAnnouncementId);
+    }
+    setHasAnnouncement(false);
+    router.push("/avisos");
+  };
+
+  const handleSupportWhats = () => {
+    const base = "https://wa.me/554733041326";
+    const text = "Olá, preciso de ajuda com o Sowish Sorteios.";
+    const url = `${base}?text=${encodeURIComponent(text)}`;
+    if (typeof window !== "undefined") {
+      window.open(url, "_blank");
+    }
+  };
+
   if (!showMenu) return <>{children}</>;
 
   return (
@@ -98,6 +125,12 @@ export default function AppMenu({ children }: { children: React.ReactNode }) {
           </Link>
           {/* Navegação desktop */}
           <nav className="hidden md:flex items-center gap-1 sm:gap-2">
+            <Link
+              href="/dashboard"
+              className="rounded-lg px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+            >
+              Dashboard
+            </Link>
             <Link
               href="/conta"
               className="rounded-lg px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900"
@@ -132,7 +165,14 @@ export default function AppMenu({ children }: { children: React.ReactNode }) {
             )}
             <button
               type="button"
-              onClick={() => router.push("/dashboard")}
+              onClick={handleSupportWhats}
+              className="inline-flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium text-emerald-700 bg-emerald-50 hover:bg-emerald-100"
+            >
+              Suporte
+            </button>
+            <button
+              type="button"
+              onClick={handleOpenNotifications}
               className="relative inline-flex items-center justify-center rounded-full p-2 text-slate-600 hover:bg-slate-100"
               aria-label="Avisos e novidades"
             >
@@ -201,6 +241,12 @@ export default function AppMenu({ children }: { children: React.ReactNode }) {
             </div>
             <div className="flex flex-col gap-1 text-sm">
               <Link
+                href="/dashboard"
+                className="rounded-lg px-3 py-2 text-slate-700 hover:bg-slate-100"
+              >
+                Dashboard
+              </Link>
+              <Link
                 href="/conta"
                 className="rounded-lg px-3 py-2 text-slate-700 hover:bg-slate-100"
               >
@@ -235,7 +281,14 @@ export default function AppMenu({ children }: { children: React.ReactNode }) {
               </Link>
               <button
                 type="button"
-                onClick={() => router.push("/dashboard")}
+                onClick={handleSupportWhats}
+                className="rounded-lg px-3 py-2 text-emerald-700 bg-emerald-50 hover:bg-emerald-100 text-xs"
+              >
+                Suporte (WhatsApp)
+              </button>
+              <button
+                type="button"
+                onClick={handleOpenNotifications}
                 className="rounded-lg px-3 py-2 text-slate-700 hover:bg-slate-100 flex items-center gap-1 text-xs"
               >
                 <span className="relative flex h-4 w-4 items-center justify-center">

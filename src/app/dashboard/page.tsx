@@ -145,15 +145,6 @@ export default function DashboardPage() {
           )}
         </header>
 
-        {announcement && (
-          <div className="rounded-2xl border border-amber-200/80 bg-amber-50/90 p-4 text-xs text-slate-800">
-            <p className="font-semibold mb-1">{announcement.title}</p>
-            <p className="text-slate-600 whitespace-pre-line">
-              {announcement.body}
-            </p>
-          </div>
-        )}
-
         <section className="grid gap-5 md:grid-cols-[minmax(0,2.1fr)_minmax(0,1.2fr)]">
           <div className="space-y-5">
             <div className="rounded-2xl border border-slate-200/80 bg-white/65 p-5 shadow-sm">
