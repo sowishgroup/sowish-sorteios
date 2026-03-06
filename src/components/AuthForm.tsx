@@ -57,7 +57,7 @@ export function AuthForm() {
   return (
     <div className="w-full max-w-md rounded-2xl border border-slate-200/70 bg-white/80 backdrop-blur-sm p-8 shadow-lg">
       <div className="flex justify-center mb-4">
-        <Image src="/logo.png" alt="Sowish" width={96} height={96} className="object-contain" />
+        <Image src="/logo.png" alt="Sowish" width={140} height={140} className="h-28 w-28 object-contain" />
       </div>
       <h2 className="text-2xl font-semibold mb-2 text-slate-900">
         {mode === "login" ? "Entre na sua conta" : "Crie sua conta"}

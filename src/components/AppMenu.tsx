@@ -50,14 +50,6 @@ export default function AppMenu({ children }: { children: React.ReactNode }) {
     setMobileOpen(false);
   }, [pathname]);
 
-  useEffect(() => {
-    if (loading) return;
-    if (!session?.user && pathname !== "/" && !pathname.startsWith("/admin") && !pathname.startsWith("/auth/callback")) {
-      router.replace("/");
-      return;
-    }
-  }, [loading, session, pathname, router]);
-
   const showMenu = session?.user && isAppRoute(pathname);
 
   const handleConnectInstagram = async () => {
@@ -83,9 +75,9 @@ export default function AppMenu({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-white/80 backdrop-blur-sm text-slate-900 flex flex-col">
       <header className="sticky top-0 z-40 border-b border-slate-200/80 bg-white/85 backdrop-blur">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 flex h-14 items-center justify-between gap-4">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 flex h-16 items-center justify-between gap-4">
           <Link href="/dashboard" className="flex items-center gap-2 shrink-0">
-            <Image src="/logo.png" alt="Sowish" width={44} height={44} className="h-11 w-11 object-contain" />
+            <Image src="/logo.png" alt="Sowish" width={72} height={72} className="h-16 w-16 object-contain" />
             <span className="font-semibold bg-clip-text text-transparent bg-gradient-to-r from-[#E1306C] to-[#F77737]">
               Sowish Sorteios
             </span>

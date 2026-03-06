@@ -13,9 +13,9 @@ export default function Home() {
             <Image
               src="/logo.png"
               alt="Sowish"
-              width={88}
-              height={88}
-              className="h-16 w-16 object-contain"
+              width={140}
+              height={140}
+              className="h-24 w-24 object-contain"
             />
             <div>
               <p

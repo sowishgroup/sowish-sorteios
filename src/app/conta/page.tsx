@@ -225,11 +225,10 @@ export default function ContaPage() {
                   className="relative h-20 w-20 rounded-full border border-slate-200 bg-white flex items-center justify-center overflow-hidden group"
                 >
                   {profile?.avatar_url ? (
-                    <Image
+                    <img
                       src={profile.avatar_url}
                       alt="Avatar"
-                      fill
-                      className="object-cover"
+                      className="h-full w-full object-cover"
                     />
                   ) : (
                     <span className="text-2xl font-semibold">

@@ -40,8 +40,10 @@ export default function RootLayout({
             alt=""
             fill
             className="object-cover object-center"
+            quality={100}
             priority
             sizes="100vw"
+            unoptimized
           />
           <div className="absolute inset-0 bg-black/15" />
         </div>
