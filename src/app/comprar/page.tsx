@@ -33,15 +33,15 @@ export default function ComprarPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white text-slate-600">
+      <main className="min-h-screen flex items-center justify-center text-slate-600">
         Carregando...
-      </div>
+      </main>
     );
   }
 
   return (
     <main className="min-h-screen text-slate-900">
-      <div className="mx-auto max-w-4xl px-4 sm:px-6 py-8">
+      <div className="mx-auto max-w-4xl px-4 sm:px-6 py-8 rounded-2xl bg-white/80 backdrop-blur-sm border border-white/40 shadow-sm">
         <h1 className="text-2xl font-semibold text-slate-900">Comprar créditos</h1>
         <p className="text-slate-500 mt-1">
           Cada crédito = 1 sorteio. Saldo atual: <strong>{credits ?? 0} créditos</strong>. R$ {PRECO.toFixed(2).replace(".", ",")} por crédito.
@@ -51,7 +51,7 @@ export default function ComprarPage() {
             const total = p.sorteios + p.brinde;
             const preco = p.sorteios * PRECO;
             return (
-              <div key={p.sorteios} className="rounded-2xl border border-slate-200 bg-slate-50/80 p-6">
+              <div key={p.sorteios} className="rounded-2xl border border-slate-200/80 bg-white/70 p-6">
                 <p className="text-2xl font-bold text-slate-900">{p.sorteios} sorteios</p>
                 {p.brinde > 0 && (
                   <p className="text-sm font-medium text-emerald-600">+ {p.brinde} brinde = {total} total</p>

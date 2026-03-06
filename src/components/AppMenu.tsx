@@ -22,6 +22,7 @@ export default function AppMenu({ children }: { children: React.ReactNode }) {
   const [credits, setCredits] = useState<number | null>(null);
   const [instagramConnected, setInstagramConnected] = useState(false);
   const [profile, setProfile] = useState<{ full_name: string | null; avatar_url: string | null } | null>(null);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -45,6 +46,11 @@ export default function AppMenu({ children }: { children: React.ReactNode }) {
   }, [pathname]);
 
   useEffect(() => {
+    // Fecha o menu mobile ao trocar de página
+    setMobileOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
     if (loading) return;
     if (!session?.user && pathname !== "/" && !pathname.startsWith("/admin") && !pathname.startsWith("/auth/callback")) {
       router.replace("/");
@@ -52,7 +58,7 @@ export default function AppMenu({ children }: { children: React.ReactNode }) {
     }
   }, [loading, session, pathname, router]);
 
-  const showMenu = session?.user && (pathname === "/" ? false : pathname.startsWith("/admin") ? false : true);
+  const showMenu = session?.user && isAppRoute(pathname);
 
   const handleConnectInstagram = async () => {
     if (!session?.user) return;
@@ -75,16 +81,17 @@ export default function AppMenu({ children }: { children: React.ReactNode }) {
   if (!showMenu) return <>{children}</>;
 
   return (
-    <div className="min-h-screen bg-white/90 backdrop-blur-sm text-slate-900 flex flex-col">
-      <header className="sticky top-0 z-40 border-b border-slate-200/80 bg-white/90 backdrop-blur">
+    <div className="min-h-screen bg-white/80 backdrop-blur-sm text-slate-900 flex flex-col">
+      <header className="sticky top-0 z-40 border-b border-slate-200/80 bg-white/85 backdrop-blur">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 flex h-14 items-center justify-between gap-4">
           <Link href="/dashboard" className="flex items-center gap-2 shrink-0">
-            <Image src="/logo.png" alt="Sowish" width={36} height={36} className="object-contain" />
+            <Image src="/logo.png" alt="Sowish" width={44} height={44} className="h-11 w-11 object-contain" />
             <span className="font-semibold bg-clip-text text-transparent bg-gradient-to-r from-[#E1306C] to-[#F77737]">
               Sowish Sorteios
             </span>
           </Link>
-          <nav className="flex items-center gap-1 sm:gap-2 flex-wrap">
+          {/* Navegação desktop */}
+          <nav className="hidden md:flex items-center gap-1 sm:gap-2">
             <Link
               href="/conta"
               className="rounded-lg px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900"
@@ -131,7 +138,74 @@ export default function AppMenu({ children }: { children: React.ReactNode }) {
               Sair
             </button>
           </nav>
+          {/* Botão mobile */}
+          <button
+            type="button"
+            onClick={() => setMobileOpen((v) => !v)}
+            className="md:hidden inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white/80 px-2.5 py-2 text-slate-700"
+            aria-label="Abrir menu"
+          >
+            <span className="sr-only">Abrir menu</span>
+            <span className="flex flex-col gap-0.5">
+              <span className="h-0.5 w-4 rounded bg-slate-700" />
+              <span className="h-0.5 w-4 rounded bg-slate-700" />
+              <span className="h-0.5 w-4 rounded bg-slate-700" />
+            </span>
+          </button>
         </div>
+        {mobileOpen && (
+          <div className="md:hidden border-t border-slate-200/80 bg-white/95 backdrop-blur px-4 py-3 space-y-2">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <span className="text-xs font-medium text-slate-700">
+                Créditos: <span className="font-semibold">{credits ?? 0}</span>
+              </span>
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="rounded-lg px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-100"
+              >
+                Sair
+              </button>
+            </div>
+            <div className="flex flex-col gap-1 text-sm">
+              <Link
+                href="/conta"
+                className="rounded-lg px-3 py-2 text-slate-700 hover:bg-slate-100"
+              >
+                Meus dados
+              </Link>
+              <Link
+                href="/ultimos-sorteios"
+                className="rounded-lg px-3 py-2 text-slate-700 hover:bg-slate-100"
+              >
+                Últimos sorteios
+              </Link>
+              {instagramConnected ? (
+                <Link
+                  href="/meus-posts"
+                  className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-emerald-700 bg-emerald-50"
+                >
+                  <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                  Meus posts conectados
+                </Link>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleConnectInstagram}
+                  className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-white bg-gradient-to-r from-[#E1306C] to-[#F77737] hover:brightness-110"
+                >
+                  Conectar Instagram
+                </button>
+              )}
+              <Link
+                href="/comprar"
+                className="rounded-lg px-3 py-2 text-[#E1306C] hover:bg-pink-50"
+              >
+                Comprar créditos
+              </Link>
+            </div>
+          </div>
+        )}
       </header>
       <main className="flex-1">{children}</main>
     </div>

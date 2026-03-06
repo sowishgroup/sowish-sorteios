@@ -8,14 +8,14 @@ export default function Home() {
   return (
     <main className="min-h-screen text-slate-900 relative">
       <div className="relative mx-auto flex max-w-6xl flex-col px-6 py-10 lg:flex-row lg:items-center lg:gap-16 lg:min-h-screen">
-        <section className="flex-1 space-y-7 rounded-2xl bg-white/85 backdrop-blur-sm p-6 lg:p-8 shadow-lg border border-white/50">
+        <section className="flex-1 space-y-7 rounded-2xl bg-white/80 backdrop-blur-sm p-6 lg:p-8 shadow-lg border border-white/40">
           <div className="flex items-center gap-3">
             <Image
               src="/logo.png"
               alt="Sowish"
-              width={56}
-              height={56}
-              className="h-12 w-12 object-contain"
+              width={88}
+              height={88}
+              className="h-16 w-16 object-contain"
             />
             <div>
               <p

@@ -276,7 +276,7 @@ export default function SorteioPage() {
             {/* Card visível: mostra a imagem real do post */}
             <div
               ref={resultImageRef}
-              className="rounded-2xl border border-slate-200 bg-slate-50/80 p-6 sm:p-8 max-w-2xl mx-auto shadow-lg"
+              className="rounded-2xl border border-slate-200/80 bg-white/75 backdrop-blur-sm p-6 sm:p-8 max-w-2xl mx-auto shadow-lg"
               style={{ minHeight: 400 }}
             >
               <div className="text-center mb-6">

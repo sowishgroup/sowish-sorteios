@@ -18,8 +18,8 @@ export const metadata: Metadata = {
   title: "Sowish Sorteios",
   description: "Plataforma de sorteios para Instagram",
   icons: {
-    icon: "/logo.png",
-    apple: "/logo.png",
+    icon: "/icon.png",
+    apple: "/icon.png",
   },
 };
 
@@ -36,7 +36,7 @@ export default function RootLayout({
         {/* Imagem de fundo em todo o aplicativo */}
         <div className="fixed inset-0 z-0 bg-slate-200" aria-hidden>
           <Image
-            src="/banner.png"
+            src="/background.png"
             alt=""
             fill
             className="object-cover object-center"

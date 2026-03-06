@@ -80,7 +80,7 @@ export default function MeusPostsPage() {
 
   return (
     <main className="min-h-screen text-slate-900">
-      <div className="mx-auto max-w-6xl px-6 py-8 space-y-6">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6 py-6 space-y-6 rounded-2xl bg-white/80 backdrop-blur-sm border border-white/40 shadow-sm">
         <header className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
             <p className="text-[11px] uppercase tracking-[0.3em] text-slate-500">
@@ -116,7 +116,7 @@ export default function MeusPostsPage() {
             </p>
           </div>
         ) : (
-          <section className="grid gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+          <section className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
             {posts.map((post) => {
               const params = new URLSearchParams();
               const imgUrl = postImageUrl(post);

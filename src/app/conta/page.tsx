@@ -196,7 +196,7 @@ export default function ContaPage() {
 
   return (
     <main className="min-h-screen text-slate-900">
-      <div className="mx-auto max-w-5xl px-4 sm:px-6 py-8 space-y-6">
+      <div className="mx-auto max-w-5xl px-4 sm:px-6 py-8 space-y-6 rounded-2xl bg-white/80 backdrop-blur-sm border border-white/40 shadow-sm">
         <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="text-[11px] uppercase tracking-[0.3em] text-slate-500">
@@ -217,7 +217,7 @@ export default function ContaPage() {
 
         <section className="grid gap-6 lg:grid-cols-[minmax(0,1.8fr)_minmax(0,1.2fr)] items-start">
           <div className="space-y-5">
-            <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-5 space-y-5 shadow-sm">
+            <div className="rounded-2xl border border-slate-200/80 bg-white/70 p-5 space-y-5 shadow-sm">
               <div className="flex items-center gap-4">
                 <button
                   type="button"
@@ -301,7 +301,7 @@ export default function ContaPage() {
               </button>
             </div>
 
-            <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-5 space-y-3">
+            <div className="rounded-2xl border border-slate-200/80 bg-white/70 p-5 space-y-3">
               <p className="text-sm font-semibold text-slate-700">
                 Segurança e acesso
               </p>
@@ -314,7 +314,7 @@ export default function ContaPage() {
           </div>
 
           <aside className="space-y-5">
-            <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-5 space-y-3">
+            <div className="rounded-2xl border border-slate-200/80 bg-white/70 p-5 space-y-3">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-xs font-semibold text-slate-700">

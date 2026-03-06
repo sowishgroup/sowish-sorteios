@@ -38,15 +38,15 @@ export default function UltimosSorteiosPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white text-slate-600">
+      <main className="min-h-screen flex items-center justify-center text-slate-600">
         Carregando...
-      </div>
+      </main>
     );
   }
 
   return (
     <main className="min-h-screen text-slate-900">
-      <div className="mx-auto max-w-4xl px-4 sm:px-6 py-8">
+      <div className="mx-auto max-w-4xl px-4 sm:px-6 py-8 rounded-2xl bg-white/80 backdrop-blur-sm border border-white/40 shadow-sm">
         <h1 className="text-2xl font-semibold text-slate-900">
           Últimos sorteios
         </h1>
@@ -54,7 +54,7 @@ export default function UltimosSorteiosPage() {
           Histórico dos sorteios que você realizou.
         </p>
         {list.length === 0 ? (
-          <div className="mt-8 rounded-2xl border border-slate-200 bg-slate-50/80 p-8 text-center text-slate-600">
+          <div className="mt-8 rounded-2xl border border-slate-200/80 bg-white/70 p-8 text-center text-slate-600">
             Nenhum sorteio realizado ainda. Vá em Meus posts e escolha um post para sortear.
           </div>
         ) : (
