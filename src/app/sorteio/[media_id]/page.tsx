@@ -227,7 +227,7 @@ export default function SorteioPage() {
         <Confetti recycle={false} numberOfPieces={400} />
       )}
 
-      <div className="mx-auto max-w-6xl px-4 sm:px-6 py-6 sm:py-8 space-y-6">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6 py-6 sm:py-8 mt-4 md:mt-6 space-y-6">
         <header className="space-y-1">
           <p className="text-[11px] uppercase tracking-[0.3em] text-slate-500">
             Sorteio

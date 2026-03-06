@@ -196,7 +196,7 @@ export default function ContaPage() {
 
   return (
     <main className="min-h-screen text-slate-900">
-      <div className="mx-auto max-w-5xl px-4 sm:px-6 py-8 space-y-6 rounded-2xl bg-white/80 backdrop-blur-sm border border-white/40 shadow-sm">
+      <div className="mx-auto max-w-5xl px-4 sm:px-6 py-8 mt-4 md:mt-6 space-y-6 rounded-2xl bg-white/70 backdrop-blur-sm border border-white/30 shadow-sm">
         <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="text-[11px] uppercase tracking-[0.3em] text-slate-500">

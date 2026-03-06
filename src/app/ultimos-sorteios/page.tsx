@@ -46,7 +46,7 @@ export default function UltimosSorteiosPage() {
 
   return (
     <main className="min-h-screen text-slate-900">
-      <div className="mx-auto max-w-4xl px-4 sm:px-6 py-8 rounded-2xl bg-white/80 backdrop-blur-sm border border-white/40 shadow-sm">
+      <div className="mx-auto max-w-4xl px-4 sm:px-6 py-8 mt-4 md:mt-6 rounded-2xl bg-white/70 backdrop-blur-sm border border-white/30 shadow-sm">
         <h1 className="text-2xl font-semibold text-slate-900">
           Últimos sorteios
         </h1>

@@ -89,7 +89,7 @@ export default function MeusPostsPage() {
 
   return (
     <main className="min-h-screen text-slate-900">
-      <div className="mx-auto max-w-6xl px-4 sm:px-6 py-6 space-y-6 rounded-2xl bg-white/80 backdrop-blur-sm border border-white/40 shadow-sm">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6 py-6 mt-4 md:mt-6 space-y-6 rounded-2xl bg-white/70 backdrop-blur-sm border border-white/30 shadow-sm">
         <header className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
             <p className="text-[11px] uppercase tracking-[0.3em] text-slate-500">

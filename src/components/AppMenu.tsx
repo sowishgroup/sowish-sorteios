@@ -29,6 +29,7 @@ export default function AppMenu({ children }: { children: React.ReactNode }) {
   const [instagramConnected, setInstagramConnected] = useState(false);
   const [profile, setProfile] = useState<ProfileInfo | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [hasAnnouncement, setHasAnnouncement] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -46,6 +47,13 @@ export default function AppMenu({ children }: { children: React.ReactNode }) {
       setProfile(prof.data ?? null);
       setCredits(cred.data?.saldo_creditos ?? 0);
       setInstagramConnected(!!ig.data);
+
+      const { data: ann } = await supabase
+        .from("announcements")
+        .select("id")
+        .eq("is_active", true)
+        .limit(1);
+      setHasAnnouncement((ann ?? []).length > 0);
       setLoading(false);
     };
     load();
@@ -122,6 +130,21 @@ export default function AppMenu({ children }: { children: React.ReactNode }) {
                 Conectar Instagram
               </button>
             )}
+            <button
+              type="button"
+              onClick={() => router.push("/dashboard")}
+              className="relative inline-flex items-center justify-center rounded-full p-2 text-slate-600 hover:bg-slate-100"
+              aria-label="Avisos e novidades"
+            >
+              <span className="sr-only">Avisos e novidades</span>
+              <span className="relative flex h-5 w-5 items-center justify-center">
+                <span className="h-4 w-4 rounded-full border border-slate-500" />
+                <span className="absolute -top-1 h-1.5 w-3 rounded-t-full border-t border-slate-500" />
+              </span>
+              {hasAnnouncement && (
+                <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-[#E1306C]" />
+              )}
+            </button>
             <span className="rounded-lg px-3 py-2 text-sm font-medium text-slate-700 bg-slate-100">
               {credits ?? 0} créditos
             </span>
@@ -210,6 +233,20 @@ export default function AppMenu({ children }: { children: React.ReactNode }) {
               >
                 Comprar créditos
               </Link>
+              <button
+                type="button"
+                onClick={() => router.push("/dashboard")}
+                className="rounded-lg px-3 py-2 text-slate-700 hover:bg-slate-100 flex items-center gap-1 text-xs"
+              >
+                <span className="relative flex h-4 w-4 items-center justify-center">
+                  <span className="h-3 w-3 rounded-full border border-slate-500" />
+                  <span className="absolute -top-1 h-1 w-2 rounded-t-full border-t border-slate-500" />
+                  {hasAnnouncement && (
+                    <span className="absolute -top-0.5 -right-0.5 h-1.5 w-1.5 rounded-full bg-[#E1306C]" />
+                  )}
+                </span>
+                Avisos
+              </button>
               {profile?.role === "admin" && (
                 <Link
                   href="/admin"

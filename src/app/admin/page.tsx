@@ -157,7 +157,7 @@ export default function AdminPage() {
 
   return (
     <main className="min-h-screen text-slate-900">
-      <div className="mx-auto max-w-6xl px-4 sm:px-6 py-8 space-y-6">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6 py-8 mt-4 md:mt-6 space-y-6">
         <header className="space-y-1">
           <p className="text-[11px] uppercase tracking-[0.3em] text-slate-500">
             Admin
