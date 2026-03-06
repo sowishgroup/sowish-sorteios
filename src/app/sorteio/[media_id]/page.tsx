@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import Confetti from "react-confetti";
 import { toPng } from "html-to-image";
@@ -180,45 +180,6 @@ export default function SorteioPage() {
     }
   };
 
-  const shareWhatsApp = useCallback(() => {
-    if (winners.length === 0) return;
-    const names = winners.map((w) => `@${w.username}`).join(", ");
-    const text =
-      winners.length === 1
-        ? `Parabéns! O ganhador(a) do sorteio é ${names} 🎉`
-        : `Parabéns! Os ganhadores do sorteio são: ${names} 🎉`;
-    const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
-    window.open(url, "_blank");
-  }, [winners]);
-
-  const downloadResultImage = useCallback(async () => {
-    const node = resultPrintRef.current;
-    if (!node) return;
-    const origTop = (node as HTMLElement).style.top;
-    try {
-      (node as HTMLElement).style.top = "0";
-      (node as HTMLElement).style.zIndex = "9999";
-      await new Promise((r) => setTimeout(r, 150));
-      // Formato story 9:16 (1080x1920)
-      const dataUrl = await toPng(node, {
-        width: 1080,
-        height: 1920,
-        pixelRatio: 2,
-        backgroundColor: "#f8fafc",
-      });
-      const a = document.createElement("a");
-      a.href = dataUrl;
-      a.download = `sorteio-ganhador-${Date.now()}.png`;
-      a.click();
-    } catch (err) {
-      console.error("Erro ao gerar imagem:", err);
-      alert("Não foi possível gerar a imagem. Tente novamente.");
-    } finally {
-      (node as HTMLElement).style.top = origTop;
-      (node as HTMLElement).style.zIndex = "";
-    }
-  }, []);
-
   const currentParticipant = participants[rollingIndex];
 
   return (
@@ -361,91 +322,7 @@ export default function SorteioPage() {
               </p>
             </div>
 
-            {/* Card para download em formato STORY 9:16 (fora da tela, sem img externa = sem CORS) */}
-            <div
-              ref={resultPrintRef}
-              className="flex flex-col rounded-2xl border border-slate-200 bg-slate-50 box-border text-slate-800"
-              style={{
-                position: "fixed",
-                left: 0,
-                top: "-9999px",
-                width: 540,
-                height: 960,
-              }}
-              aria-hidden
-            >
-              <div className="flex-1 flex flex-col justify-center items-center px-6 pt-8 pb-4">
-                <p className="text-2xl font-semibold text-[#E1306C] mb-2">
-                  Parabéns!
-                </p>
-                {winners.length === 1 ? (
-                  <p className="text-xl text-slate-800 text-center">
-                    O ganhador(a) é{" "}
-                    <span className="font-bold text-[#E1306C]">
-                      @{winners[0].username}
-                    </span>
-                  </p>
-                ) : (
-                  <p className="text-xl text-slate-800 text-center">
-                    Os ganhadores são:
-                  </p>
-                )}
-              </div>
-              <div className="flex flex-wrap justify-center gap-6 px-4 pb-4">
-                {winners.map((w) => (
-                  <div
-                    key={w.id}
-                    className="flex flex-col items-center text-center"
-                  >
-                    <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#E1306C] via-[#F77737] to-[#FCAF45] p-[2px] shadow flex items-center justify-center">
-                      <div className="w-full h-full rounded-full bg-white flex items-center justify-center text-2xl font-bold text-slate-700">
-                        {(w.username || "?").charAt(0).toUpperCase()}
-                      </div>
-                    </div>
-                    <p className="mt-1 font-semibold text-slate-800 text-sm">
-                      @{w.username}
-                    </p>
-                  </div>
-                ))}
-              </div>
-              <div className="flex-1 min-h-[180px] flex items-center justify-center px-4 pb-4">
-                <div className="w-full max-w-[280px] aspect-square rounded-xl border-2 border-slate-300 bg-slate-200 flex items-center justify-center">
-                  <span className="text-slate-500 text-sm font-medium">Post do sorteio</span>
-                </div>
-              </div>
-              <div className="px-4 pb-3 text-center">
-                {(likeCount != null || commentsCount != null || participantsCount != null) && (
-                  <p className="text-xs text-slate-600 mb-1">
-                    {likeCount != null && <span>{likeCount.toLocaleString("pt-BR")} curtidas</span>}
-                    {likeCount != null && commentsCount != null && " · "}
-                    {commentsCount != null && <span>{commentsCount.toLocaleString("pt-BR")} comentários</span>}
-                    {participantsCount != null && (
-                      <span className="block mt-0.5 font-medium">{participantsCount.toLocaleString("pt-BR")} participantes</span>
-                    )}
-                  </p>
-                )}
-                <p className="text-[10px] text-slate-500">
-                  Sowish Sorteios · Resultado oficial do sorteio
-                </p>
-              </div>
-            </div>
-
-            <div className="flex flex-col sm:flex-row gap-3 justify-center max-w-2xl mx-auto">
-              <button
-                type="button"
-                onClick={shareWhatsApp}
-                className="rounded-xl bg-[#25D366] hover:bg-[#20bd5a] text-white font-semibold py-3 px-6 transition"
-              >
-                Compartilhar no WhatsApp
-              </button>
-              <button
-                type="button"
-                onClick={downloadResultImage}
-                className="rounded-xl bg-gradient-to-r from-[#E1306C] to-[#F77737] text-white font-semibold py-3 px-6 hover:brightness-110 transition"
-              >
-                Baixar imagem para Instagram
-              </button>
-            </div>
+            {/* Removido compartilhamento automático e download de imagem conforme solicitado */}
           </section>
         )}
 
