@@ -18,6 +18,8 @@ export default function ContaPage() {
   const [credits, setCredits] = useState<number | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [email, setEmail] = useState<string | null>(null);
+  const [instagramConnected, setInstagramConnected] = useState(false);
+  const [disconnecting, setDisconnecting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -39,7 +41,7 @@ export default function ContaPage() {
 
       setEmail(user.email ?? null);
 
-      const [{ data: profileData }, { data: creditsData }] = await Promise.all([
+      const [{ data: profileData }, { data: creditsData }, { data: igData }] = await Promise.all([
         supabase
           .from("profiles")
           .select("id, full_name, avatar_url")
@@ -48,6 +50,11 @@ export default function ContaPage() {
         supabase
           .from("user_credits")
           .select("saldo_creditos")
+          .eq("user_id", user.id)
+          .maybeSingle(),
+        supabase
+          .from("user_instagram_accounts")
+          .select("user_id")
           .eq("user_id", user.id)
           .maybeSingle(),
       ]);
@@ -60,6 +67,7 @@ export default function ContaPage() {
         }
       );
       setCredits(creditsData?.saldo_creditos ?? 0);
+      setInstagramConnected(!!igData);
       setLoading(false);
     };
 
@@ -150,6 +158,39 @@ export default function ContaPage() {
   const handleLogout = async () => {
     await supabase.auth.signOut();
     router.push("/");
+  };
+
+  const handleDisconnectInstagram = async () => {
+    if (
+      !window.confirm(
+        "Desconectar sua conta do Instagram? Você precisará conectar novamente para realizar sorteios."
+      )
+    ) {
+      return;
+    }
+    try {
+      setDisconnecting(true);
+      setErrorMsg(null);
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) throw new Error("Usuário não encontrado.");
+
+      const res = await fetch("/api/instagram/disconnect", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ userId: session.user.id }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message ?? "Erro ao desconectar.");
+      setInstagramConnected(false);
+      setSuccessMsg("Instagram desconectado com sucesso.");
+    } catch (err: any) {
+      setErrorMsg(err.message ?? "Erro ao desconectar Instagram.");
+    } finally {
+      setDisconnecting(false);
+    }
   };
 
   const handleDeleteAccount = async () => {
@@ -298,6 +339,41 @@ export default function ContaPage() {
               >
                 {saving ? "Salvando..." : "Salvar alterações"}
               </button>
+            </div>
+
+            <div className="rounded-2xl border border-slate-200/80 bg-white/70 p-5 space-y-3">
+              <p className="text-sm font-semibold text-slate-700">
+                Instagram
+              </p>
+              {instagramConnected ? (
+                <>
+                  <p className="text-xs text-slate-600">
+                    Sua conta do Instagram está conectada. Você pode realizar
+                    sorteios nos seus posts.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={handleDisconnectInstagram}
+                    disabled={disconnecting}
+                    className="w-full rounded-lg border border-slate-300 bg-white text-xs font-medium py-2.5 text-slate-700 hover:bg-slate-50 transition disabled:opacity-50"
+                  >
+                    {disconnecting ? "Desconectando..." : "Desconectar Instagram"}
+                  </button>
+                </>
+              ) : (
+                <>
+                  <p className="text-xs text-slate-600">
+                    Conecte seu Instagram para realizar sorteios nos seus posts.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => router.push("/dashboard")}
+                    className="w-full rounded-lg bg-gradient-to-r from-[#E1306C] to-[#F77737] text-white text-xs font-semibold py-2.5 hover:brightness-110 transition"
+                  >
+                    Conectar Instagram (no menu superior)
+                  </button>
+                </>
+              )}
             </div>
 
             <div className="rounded-2xl border border-slate-200/80 bg-white/70 p-5 space-y-3">

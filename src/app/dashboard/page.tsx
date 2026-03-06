@@ -17,6 +17,8 @@ type InstagramMedia = {
   media_url?: string;
   thumbnail_url?: string;
   media_type?: string;
+  like_count?: number;
+  comments_count?: number;
 };
 
 type ActivityDraw = {
@@ -303,8 +305,17 @@ export default function DashboardPage() {
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4">
               {recentPosts.map((post) => {
-                const img = post.thumbnail_url || post.media_url;
-                const href = `/sorteio/${post.id}`;
+                const isVideo = post.media_type && post.media_type !== "IMAGE";
+                const img = isVideo ? (post.thumbnail_url || post.media_url) : (post.media_url || post.thumbnail_url);
+                const params = new URLSearchParams();
+                if (img) params.set("media_url", img);
+                if (post.thumbnail_url && isVideo) params.set("thumbnail_url", post.thumbnail_url);
+                if (post.media_type) params.set("media_type", post.media_type);
+                if (post.caption) params.set("caption", post.caption);
+                if (post.like_count != null) params.set("likes", String(post.like_count));
+                if (post.comments_count != null) params.set("comments", String(post.comments_count));
+                const qs = params.toString();
+                const href = `/sorteio/${post.id}${qs ? `?${qs}` : ""}`;
                 return (
                   <Link
                     key={post.id}

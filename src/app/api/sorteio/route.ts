@@ -18,9 +18,11 @@ async function fetchAllComments(
   mediaId: string,
   accessToken: string
 ): Promise<Comment[]> {
+  // Usar "from" em vez de "username" - a API retorna username vazio em alguns casos,
+  // mas "from" contém { id, username } e funciona melhor com instagram_manage_comments
   let url = `https://graph.facebook.com/v20.0/${encodeURIComponent(
     mediaId
-  )}/comments?fields=id,text,username&limit=100&access_token=${encodeURIComponent(
+  )}/comments?fields=id,text,from&limit=100&access_token=${encodeURIComponent(
     accessToken
   )}`;
 
@@ -39,10 +41,17 @@ async function fetchAllComments(
 
     if (Array.isArray(data.data)) {
       for (const c of data.data) {
+        const from = c.from;
+        const username =
+          (from && typeof from.username === "string" && from.username.trim())
+            ? from.username.trim()
+            : (typeof c.username === "string" && c.username.trim())
+              ? c.username.trim()
+              : "desconhecido";
         comments.push({
           id: c.id,
           text: c.text ?? "",
-          username: c.username ?? "desconhecido",
+          username,
         });
       }
     }

@@ -23,17 +23,24 @@ export default function SorteioPage() {
 
   const mediaId = params.media_id;
   const mediaUrlFromQuery = searchParams.get("media_url") ?? "";
+  const thumbnailFromQuery = searchParams.get("thumbnail_url") ?? "";
+  const mediaTypeFromQuery = searchParams.get("media_type") ?? "";
   const captionFromQuery = searchParams.get("caption") ?? "";
   const likesFromQuery = searchParams.get("likes");
   const commentsFromQuery = searchParams.get("comments");
 
   const [userId, setUserId] = useState<string | null>(null);
   const [mediaUrl, setMediaUrl] = useState(mediaUrlFromQuery);
+  const [thumbnailUrl, setThumbnailUrl] = useState(thumbnailFromQuery);
+  const [mediaType, setMediaType] = useState(mediaTypeFromQuery);
+  const [isVideoOrReel, setIsVideoOrReel] = useState(
+    mediaTypeFromQuery === "VIDEO" || mediaTypeFromQuery === "REELS"
+  );
   const [caption, setCaption] = useState(captionFromQuery);
   const [likeCount, setLikeCount] = useState<number | null>(likesFromQuery ? parseInt(likesFromQuery, 10) : null);
   const [commentsCount, setCommentsCount] = useState<number | null>(commentsFromQuery ? parseInt(commentsFromQuery, 10) : null);
   const [participantsCount, setParticipantsCount] = useState<number | null>(null);
-  const [numWinners, setNumWinners] = useState(1);
+  const [numWinnersInput, setNumWinnersInput] = useState("1");
   const [keyword, setKeyword] = useState("");
   const [uniquePerUser, setUniquePerUser] = useState(true);
   const [loading, setLoading] = useState(false);
@@ -65,13 +72,33 @@ export default function SorteioPage() {
         });
         if (res.ok) {
           const data = await res.json();
-          if (data.media_url) setMediaUrl(data.media_url);
+          const type = data.media_type != null ? String(data.media_type) : "";
+          const isVideoReel = type === "VIDEO" || type === "REELS" || data.is_video_or_reel === true;
+          setMediaType(type);
+          setIsVideoOrReel(isVideoReel);
+          // Para vídeos/reels: media_url é o mp4, usar thumbnail_url para exibir imagem
+          if (isVideoReel) {
+            if (data.thumbnail_url) {
+              setMediaUrl(data.thumbnail_url);
+              setThumbnailUrl(data.thumbnail_url);
+            } else if (data.media_url) {
+              setMediaUrl(data.media_url);
+            }
+          } else {
+            if (data.media_url) setMediaUrl(data.media_url);
+            if (data.thumbnail_url) setThumbnailUrl(data.thumbnail_url);
+          }
           if (data.caption != null) setCaption(data.caption ?? "");
           setLikeCount(typeof data.like_count === "number" ? data.like_count : null);
           setCommentsCount(typeof data.comments_count === "number" ? data.comments_count : null);
         }
       } catch (_) {
-        if (!mediaUrl) setMediaUrl(mediaUrlFromQuery);
+        if (!mediaUrl && !thumbnailUrl) {
+          const fallback = mediaTypeFromQuery === "VIDEO" || mediaTypeFromQuery === "REELS"
+            ? thumbnailFromQuery || mediaUrlFromQuery
+            : mediaUrlFromQuery || thumbnailFromQuery;
+          if (fallback) setMediaUrl(fallback);
+        }
         if (!caption && captionFromQuery) setCaption(captionFromQuery);
       }
     };
@@ -124,6 +151,8 @@ export default function SorteioPage() {
       clearInterval(slowDown);
     };
   }, [rolling, participants.length]);
+
+  const numWinners = Math.max(1, parseInt(numWinnersInput, 10) || 1);
 
   const handleRunDraw = async () => {
     if (!userId || !mediaId || numWinners <= 0) {
@@ -181,6 +210,10 @@ export default function SorteioPage() {
   };
 
   const currentParticipant = participants[rollingIndex];
+
+  // Para vídeos/reels, usar thumbnail (imagem) em vez de media_url (mp4)
+  const displayImageUrl =
+    isVideoOrReel ? thumbnailUrl || mediaUrl : mediaUrl;
 
   return (
     <main className="min-h-screen text-slate-900">
@@ -280,9 +313,9 @@ export default function SorteioPage() {
               </div>
 
               <div className="relative w-full aspect-square max-w-sm mx-auto rounded-xl overflow-hidden border border-slate-200 bg-slate-200">
-                {mediaUrl ? (
+                {displayImageUrl ? (
                   <img
-                    src={mediaUrl}
+                    src={displayImageUrl}
                     alt="Post do sorteio"
                     className="w-full h-full object-cover"
                     onError={(e) => {
@@ -297,7 +330,7 @@ export default function SorteioPage() {
                     }}
                   />
                 ) : null}
-                {!mediaUrl && (
+                {!displayImageUrl && (
                   <div className="absolute inset-0 flex items-center justify-center text-slate-500 text-sm">
                     Post do sorteio
                   </div>
@@ -330,10 +363,10 @@ export default function SorteioPage() {
           <section className="space-y-4">
             {!showReveal && (
               <div className="rounded-2xl overflow-hidden border border-slate-200 bg-slate-50/80 shadow-sm">
-                {mediaUrl ? (
+                {displayImageUrl ? (
                   <div className="relative w-full aspect-square">
                     <img
-                      src={mediaUrl}
+                      src={displayImageUrl}
                       alt={caption || "Post do Instagram"}
                       className="absolute inset-0 w-full h-full object-cover"
                     />
@@ -393,10 +426,13 @@ export default function SorteioPage() {
                 <input
                   type="number"
                   min={1}
-                  value={numWinners}
-                  onChange={(e) =>
-                    setNumWinners(Math.max(1, Number(e.target.value) || 1))
-                  }
+                  value={numWinnersInput}
+                  onChange={(e) => setNumWinnersInput(e.target.value)}
+                  onBlur={() => {
+                    const n = parseInt(numWinnersInput, 10);
+                    if (Number.isNaN(n) || n < 1) setNumWinnersInput("1");
+                    else setNumWinnersInput(String(n));
+                  }}
                   className="w-32 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-[#E1306C] focus:border-[#E1306C]"
                 />
               </div>

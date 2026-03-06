@@ -136,6 +136,8 @@ export default function MeusPostsPage() {
               const params = new URLSearchParams();
               const imgUrl = postImageUrl(post);
               if (imgUrl) params.set("media_url", imgUrl);
+              if (post.thumbnail_url && post.media_type !== "IMAGE") params.set("thumbnail_url", post.thumbnail_url);
+              if (post.media_type) params.set("media_type", post.media_type);
               if (post.caption) params.set("caption", post.caption);
               if (post.like_count != null) params.set("likes", String(post.like_count));
               if (post.comments_count != null) params.set("comments", String(post.comments_count));

@@ -39,6 +39,7 @@ export default function AppMenu({ children }: { children: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [hasAnnouncement, setHasAnnouncement] = useState(false);
   const [latestAnnouncementId, setLatestAnnouncementId] = useState<string | null>(null);
+  const [disconnecting, setDisconnecting] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -110,6 +111,29 @@ export default function AppMenu({ children }: { children: React.ReactNode }) {
     router.push("/avisos");
   };
 
+  const handleDisconnectInstagram = async () => {
+    if (!session?.user || !window.confirm("Desconectar sua conta do Instagram? Você precisará conectar novamente para realizar sorteios.")) return;
+    setDisconnecting(true);
+    try {
+      const { data: { session: s } } = await supabase.auth.getSession();
+      const token = s?.access_token;
+      if (!token) throw new Error("Sessão inválida");
+      const res = await fetch("/api/instagram/disconnect", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ userId: session.user.id }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.message ?? "Erro ao desconectar");
+      setInstagramConnected(false);
+      router.refresh();
+    } catch (err: any) {
+      alert(err.message ?? "Erro ao desconectar Instagram.");
+    } finally {
+      setDisconnecting(false);
+    }
+  };
+
   const handleSupportWhats = () => {
     const base = "https://wa.me/554733041326";
     const text = "Olá, preciso de ajuda com o Sowish Sorteios.";
@@ -158,10 +182,21 @@ export default function AppMenu({ children }: { children: React.ReactNode }) {
               Meus posts
             </Link>
             {instagramConnected ? (
-              <span className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-emerald-600 bg-emerald-50">
-                <span className="h-2 w-2 rounded-full bg-emerald-500" />
-                Conectado
-              </span>
+              <div className="inline-flex items-center gap-1">
+                <span className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-emerald-600 bg-emerald-50">
+                  <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                  Conectado
+                </span>
+                <button
+                  type="button"
+                  onClick={handleDisconnectInstagram}
+                  disabled={disconnecting}
+                  className="rounded-lg px-2 py-1.5 text-xs font-medium text-slate-500 hover:bg-slate-100 hover:text-slate-700 disabled:opacity-50"
+                  title="Desconectar Instagram"
+                >
+                  {disconnecting ? "..." : "Desconectar"}
+                </button>
+              </div>
             ) : (
               <button
                 type="button"
@@ -272,7 +307,16 @@ export default function AppMenu({ children }: { children: React.ReactNode }) {
               >
                 Meus posts
               </Link>
-              {!instagramConnected && (
+              {instagramConnected ? (
+                <button
+                  type="button"
+                  onClick={handleDisconnectInstagram}
+                  disabled={disconnecting}
+                  className="rounded-lg px-3 py-2 text-xs font-medium text-slate-600 hover:bg-slate-100"
+                >
+                  {disconnecting ? "Desconectando..." : "Desconectar Instagram"}
+                </button>
+              ) : (
                 <button
                   type="button"
                   onClick={handleConnectInstagram}

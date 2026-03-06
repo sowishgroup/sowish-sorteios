@@ -48,7 +48,7 @@ export async function GET(
     const token = account.long_lived_token as string;
     const url = `https://graph.facebook.com/v20.0/${encodeURIComponent(
       mediaId
-    )}?fields=id,caption,media_url,thumbnail_url,permalink,media_type,like_count,comments_count&access_token=${encodeURIComponent(
+    )}?fields=id,caption,media_url,thumbnail_url,permalink,media_type,media_product_type,like_count,comments_count&access_token=${encodeURIComponent(
       token
     )}`;
     const res = await fetch(url);
@@ -59,13 +59,20 @@ export async function GET(
         { status: 400 }
       );
     }
+    const mediaType = data.media_type != null ? String(data.media_type) : undefined;
+    const mediaProductType = data.media_product_type != null ? String(data.media_product_type) : undefined;
+    // Reels podem vir como media_type VIDEO com media_product_type REELS
+    const isVideoOrReel = mediaType === "VIDEO" || mediaType === "REELS" || mediaProductType === "REELS";
+
     return NextResponse.json({
       id: String(data.id),
       caption: data.caption != null ? String(data.caption) : undefined,
       media_url: data.media_url != null ? String(data.media_url) : undefined,
       thumbnail_url: data.thumbnail_url != null ? String(data.thumbnail_url) : undefined,
       permalink: data.permalink != null ? String(data.permalink) : undefined,
-      media_type: data.media_type != null ? String(data.media_type) : undefined,
+      media_type: mediaType,
+      media_product_type: mediaProductType,
+      is_video_or_reel: isVideoOrReel,
       like_count: typeof data.like_count === "number" ? data.like_count : 0,
       comments_count: typeof data.comments_count === "number" ? data.comments_count : 0,
     });
