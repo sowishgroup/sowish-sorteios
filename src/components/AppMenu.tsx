@@ -14,6 +14,12 @@ function isAppRoute(pathname: string): boolean {
   return APP_ROUTES.some((r) => pathname === r || pathname.startsWith(r + "/"));
 }
 
+type ProfileInfo = {
+  full_name: string | null;
+  avatar_url: string | null;
+  role: string | null;
+};
+
 export default function AppMenu({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -21,7 +27,7 @@ export default function AppMenu({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<{ user: { id: string; email?: string } } | null>(null);
   const [credits, setCredits] = useState<number | null>(null);
   const [instagramConnected, setInstagramConnected] = useState(false);
-  const [profile, setProfile] = useState<{ full_name: string | null; avatar_url: string | null } | null>(null);
+  const [profile, setProfile] = useState<ProfileInfo | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
@@ -33,7 +39,7 @@ export default function AppMenu({ children }: { children: React.ReactNode }) {
         return;
       }
       const [prof, cred, ig] = await Promise.all([
-        supabase.from("profiles").select("full_name, avatar_url").eq("id", s.user.id).maybeSingle(),
+        supabase.from("profiles").select("full_name, avatar_url, role").eq("id", s.user.id).maybeSingle(),
         supabase.from("user_credits").select("saldo_creditos").eq("user_id", s.user.id).maybeSingle(),
         supabase.from("user_instagram_accounts").select("user_id").eq("user_id", s.user.id).maybeSingle(),
       ]);
@@ -75,9 +81,9 @@ export default function AppMenu({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-white/80 backdrop-blur-sm text-slate-900 flex flex-col">
       <header className="sticky top-0 z-40 border-b border-slate-200/80 bg-white/85 backdrop-blur">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 flex h-16 items-center justify-between gap-4">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 flex h-20 items-center justify-between gap-4">
           <Link href="/dashboard" className="flex items-center gap-2 shrink-0">
-            <Image src="/logo.png" alt="Sowish" width={72} height={72} className="h-16 w-16 object-contain" />
+            <Image src="/logo.png" alt="Sowish" width={220} height={220} className="h-20 w-20 object-contain" />
             <span className="font-semibold bg-clip-text text-transparent bg-gradient-to-r from-[#E1306C] to-[#F77737]">
               Sowish Sorteios
             </span>
@@ -96,14 +102,17 @@ export default function AppMenu({ children }: { children: React.ReactNode }) {
             >
               Últimos sorteios
             </Link>
+            <Link
+              href="/meus-posts"
+              className="rounded-lg px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+            >
+              Meus posts
+            </Link>
             {instagramConnected ? (
-              <Link
-                href="/meus-posts"
-                className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-emerald-600 bg-emerald-50"
-              >
+              <span className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-emerald-600 bg-emerald-50">
                 <span className="h-2 w-2 rounded-full bg-emerald-500" />
                 Conectado
-              </Link>
+              </span>
             ) : (
               <button
                 type="button"
@@ -122,6 +131,14 @@ export default function AppMenu({ children }: { children: React.ReactNode }) {
             >
               Comprar
             </Link>
+            {profile?.role === "admin" && (
+              <Link
+                href="/admin"
+                className="rounded-lg px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+              >
+                Admin
+              </Link>
+            )}
             <button
               type="button"
               onClick={handleLogout}
@@ -172,15 +189,13 @@ export default function AppMenu({ children }: { children: React.ReactNode }) {
               >
                 Últimos sorteios
               </Link>
-              {instagramConnected ? (
-                <Link
-                  href="/meus-posts"
-                  className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-emerald-700 bg-emerald-50"
-                >
-                  <span className="h-2 w-2 rounded-full bg-emerald-500" />
-                  Meus posts conectados
-                </Link>
-              ) : (
+              <Link
+                href="/meus-posts"
+                className="rounded-lg px-3 py-2 text-slate-700 hover:bg-slate-100"
+              >
+                Meus posts
+              </Link>
+              {!instagramConnected && (
                 <button
                   type="button"
                   onClick={handleConnectInstagram}
@@ -195,6 +210,14 @@ export default function AppMenu({ children }: { children: React.ReactNode }) {
               >
                 Comprar créditos
               </Link>
+              {profile?.role === "admin" && (
+                <Link
+                  href="/admin"
+                  className="rounded-lg px-3 py-2 text-slate-700 hover:bg-slate-100"
+                >
+                  Admin
+                </Link>
+              )}
             </div>
           </div>
         )}

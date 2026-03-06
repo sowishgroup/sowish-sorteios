@@ -9,6 +9,7 @@ type Mode = "login" | "signup";
 
 export function AuthForm() {
   const [mode, setMode] = useState<Mode>("login");
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -33,6 +34,11 @@ export function AuthForm() {
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
+          options: {
+            data: {
+              full_name: name || null,
+            },
+          },
         });
         if (error) throw error;
 
@@ -57,7 +63,7 @@ export function AuthForm() {
   return (
     <div className="w-full max-w-md rounded-2xl border border-slate-200/70 bg-white/80 backdrop-blur-sm p-8 shadow-lg">
       <div className="flex justify-center mb-4">
-        <Image src="/logo.png" alt="Sowish" width={140} height={140} className="h-28 w-28 object-contain" />
+        <Image src="/logo.png" alt="Sowish" width={220} height={220} className="h-40 w-40 object-contain" />
       </div>
       <h2 className="text-2xl font-semibold mb-2 text-slate-900">
         {mode === "login" ? "Entre na sua conta" : "Crie sua conta"}
@@ -67,6 +73,19 @@ export function AuthForm() {
       </p>
 
       <form onSubmit={handleSubmit} className="space-y-4">
+        {mode === "signup" && (
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-slate-700">Nome completo</label>
+            <input
+              type="text"
+              required
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+              placeholder="Seu nome"
+            />
+          </div>
+        )}
         <div className="space-y-2">
           <label className="text-sm font-medium text-slate-700">E-mail</label>
           <input
