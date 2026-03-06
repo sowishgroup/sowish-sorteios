@@ -2,26 +2,43 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
+    short_name: "Sowish Sorteios",
     name: "Sowish Sorteios",
-    short_name: "Sowish",
-    description: "Plataforma de sorteios para Instagram by Sowish Group",
-    start_url: "/",
-    display: "standalone",
-    lang: "pt-BR",
-    background_color: "#0b2d68",
-    theme_color: "#2563eb",
     icons: [
       {
-        src: "/icon.png",
-        sizes: "192x192",
-        type: "image/png",
+        src: "/favicon.ico",
+        sizes: "any",
+        type: "image/x-icon",
       },
       {
-        src: "/icon.png",
+        src: "/android-chrome-192x192.png",
+        sizes: "192x192",
+        type: "image/png",
+        purpose: "any",
+      },
+      {
+        src: "/android-chrome-192x192.png",
+        sizes: "192x192",
+        type: "image/png",
+        purpose: "maskable",
+      },
+      {
+        src: "/android-chrome-512x512.png",
         sizes: "512x512",
         type: "image/png",
+        purpose: "any",
+      },
+      {
+        src: "/android-chrome-512x512.png",
+        sizes: "512x512",
+        type: "image/png",
+        purpose: "maskable",
       },
     ],
+    start_url: ".",
+    display: "standalone",
+    theme_color: "#000000",
+    background_color: "#0240ac",
   };
 }
 
