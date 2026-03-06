@@ -6,7 +6,15 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 
-const APP_ROUTES = ["/dashboard", "/meus-posts", "/conta", "/comprar", "/ultimos-sorteios"];
+const APP_ROUTES = [
+  "/dashboard",
+  "/meus-posts",
+  "/conta",
+  "/comprar",
+  "/ultimos-sorteios",
+  "/avisos",
+  "/admin",
+];
 const SORTEIO_PREFIX = "/sorteio/";
 
 function isAppRoute(pathname: string): boolean {
