@@ -45,6 +45,8 @@ export default function SorteioPage() {
   const [uniquePerUser, setUniquePerUser] = useState(true);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [commentStatus, setCommentStatus] = useState<string | null>(null);
+  const [commentLoading, setCommentLoading] = useState(false);
   const [winners, setWinners] = useState<Participant[]>([]);
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [rolling, setRolling] = useState(false);
@@ -162,6 +164,7 @@ export default function SorteioPage() {
 
     setLoading(true);
     setErrorMsg(null);
+    setCommentStatus(null);
     setWinners([]);
     setParticipants([]);
     setShowReveal(false);
@@ -206,6 +209,55 @@ export default function SorteioPage() {
       setErrorMsg("Erro inesperado ao realizar o sorteio.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleCommentWinners = async () => {
+    if (!userId || !mediaId || winners.length === 0) {
+      setCommentStatus(
+        "Não há vencedores carregados para comentar. Rode o sorteio novamente."
+      );
+      return;
+    }
+
+    const usernames = winners
+      .map((w) => (w.username || "").trim())
+      .filter((u) => u && u.toLowerCase() !== "desconhecido" && u !== "?");
+
+    if (usernames.length === 0) {
+      setCommentStatus(
+        "Não foi possível identificar o @ do ganhador para comentar automaticamente."
+      );
+      return;
+    }
+
+    setCommentLoading(true);
+    setCommentStatus(null);
+    try {
+      const res = await fetch("/api/sorteio/comment", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId,
+          mediaId,
+          usernames,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setCommentStatus(
+          data?.message ?? "Erro ao comentar automaticamente no Instagram."
+        );
+        return;
+      }
+      setCommentStatus("Comentário publicado no Instagram com sucesso.");
+    } catch (e) {
+      console.error(e);
+      setCommentStatus(
+        "Erro inesperado ao comentar automaticamente no Instagram."
+      );
+    } finally {
+      setCommentLoading(false);
     }
   };
 
@@ -353,6 +405,24 @@ export default function SorteioPage() {
               <p className="text-center text-xs text-slate-500 mt-4">
                 Sowish Sorteios · Resultado oficial do sorteio
               </p>
+
+              <div className="mt-4 flex flex-col items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleCommentWinners}
+                  disabled={commentLoading || winners.length === 0}
+                  className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-[#E1306C] to-[#F77737] px-5 py-2 text-xs font-semibold text-white shadow-sm hover:brightness-110 disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  {commentLoading
+                    ? "Comentando no Instagram..."
+                    : "Comentar no post marcando o ganhador"}
+                </button>
+                {commentStatus && (
+                  <p className="text-[11px] text-slate-600 text-center max-w-md">
+                    {commentStatus}
+                  </p>
+                )}
+              </div>
             </div>
 
             {/* Removido compartilhamento automático e download de imagem conforme solicitado */}
