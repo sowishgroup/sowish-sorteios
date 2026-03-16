@@ -47,6 +47,8 @@ export default function SorteioPage() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [commentStatus, setCommentStatus] = useState<string | null>(null);
   const [commentLoading, setCommentLoading] = useState(false);
+  const [commentId, setCommentId] = useState<string | null>(null);
+  const [commentText, setCommentText] = useState<string>("");
   const [winners, setWinners] = useState<Participant[]>([]);
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [rolling, setRolling] = useState(false);
@@ -165,6 +167,8 @@ export default function SorteioPage() {
     setLoading(true);
     setErrorMsg(null);
     setCommentStatus(null);
+    setCommentId(null);
+    setCommentText("");
     setWinners([]);
     setParticipants([]);
     setShowReveal(false);
@@ -250,12 +254,94 @@ export default function SorteioPage() {
         );
         return;
       }
+      setCommentId(data?.id ?? null);
+      setCommentText(data?.message ?? "");
       setCommentStatus("Comentário publicado no Instagram com sucesso.");
     } catch (e) {
       console.error(e);
       setCommentStatus(
         "Erro inesperado ao comentar automaticamente no Instagram."
       );
+    } finally {
+      setCommentLoading(false);
+    }
+  };
+
+  const handleDeleteComment = async () => {
+    if (!userId || !commentId) {
+      setCommentStatus("Nenhum comentário automático para excluir.");
+      return;
+    }
+    setCommentLoading(true);
+    setCommentStatus(null);
+    try {
+      const res = await fetch("/api/sorteio/comment", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId,
+          mediaId,
+          commentId,
+          action: "delete",
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setCommentStatus(
+          data?.message ?? "Erro ao excluir comentário no Instagram."
+        );
+        return;
+      }
+      setCommentStatus("Comentário excluído do Instagram com sucesso.");
+      setCommentId(null);
+      setCommentText("");
+    } catch (e) {
+      console.error(e);
+      setCommentStatus(
+        "Erro inesperado ao excluir o comentário no Instagram."
+      );
+    } finally {
+      setCommentLoading(false);
+    }
+  };
+
+  const handleUpdateComment = async () => {
+    if (!userId || !mediaId || !commentId) {
+      setCommentStatus("Nenhum comentário automático para editar.");
+      return;
+    }
+    const text = commentText.trim();
+    if (!text) {
+      setCommentStatus("Preencha o texto do comentário para salvar a edição.");
+      return;
+    }
+    setCommentLoading(true);
+    setCommentStatus(null);
+    try {
+      // Estratégia: recriar o comentário com o novo texto
+      const res = await fetch("/api/sorteio/comment", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId,
+          mediaId,
+          commentId,
+          message: text,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setCommentStatus(
+          data?.message ?? "Erro ao editar comentário no Instagram."
+        );
+        return;
+      }
+      setCommentId(data?.id ?? null);
+      setCommentText(data?.message ?? text);
+      setCommentStatus("Comentário atualizado no Instagram com sucesso.");
+    } catch (e) {
+      console.error(e);
+      setCommentStatus("Erro inesperado ao editar o comentário.");
     } finally {
       setCommentLoading(false);
     }
@@ -406,7 +492,7 @@ export default function SorteioPage() {
                 Sowish Sorteios · Resultado oficial do sorteio
               </p>
 
-              <div className="mt-4 flex flex-col items-center gap-2">
+              <div className="mt-4 flex flex-col items-center gap-3">
                 <button
                   type="button"
                   onClick={handleCommentWinners}
@@ -417,6 +503,37 @@ export default function SorteioPage() {
                     ? "Comentando no Instagram..."
                     : "Comentar no post marcando o ganhador"}
                 </button>
+                {commentId && (
+                  <div className="w-full max-w-md space-y-2 text-left">
+                    <label className="block text-[11px] font-medium text-slate-600">
+                      Texto do comentário automático
+                    </label>
+                    <textarea
+                      value={commentText}
+                      onChange={(e) => setCommentText(e.target.value)}
+                      rows={3}
+                      className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs text-slate-900 outline-none focus:ring-2 focus:ring-[#E1306C] focus:border-[#E1306C]"
+                    />
+                    <div className="flex flex-wrap gap-2 text-[11px]">
+                      <button
+                        type="button"
+                        onClick={handleUpdateComment}
+                        disabled={commentLoading}
+                        className="rounded-full border border-slate-300 bg-white px-3 py-1 font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-60"
+                      >
+                        Salvar edição
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleDeleteComment}
+                        disabled={commentLoading}
+                        className="rounded-full border border-red-300 bg-red-50 px-3 py-1 font-medium text-red-700 hover:bg-red-100 disabled:opacity-60"
+                      >
+                        Excluir comentário
+                      </button>
+                    </div>
+                  </div>
+                )}
                 {commentStatus && (
                   <p className="text-[11px] text-slate-600 text-center max-w-md">
                     {commentStatus}
