@@ -12,11 +12,21 @@ type Body = {
   userId?: string;
   mediaId?: string;
   usernames?: string[];
+  message?: string;
+  commentId?: string;
+  action?: "create" | "delete" | "update";
 };
 
 export async function POST(req: NextRequest) {
   try {
-    const { userId, mediaId, usernames }: Body = await req.json().catch(
+    const {
+      userId,
+      mediaId,
+      usernames,
+      message,
+      commentId,
+      action,
+    }: Body = await req.json().catch(
       () => ({} as Body)
     );
 
@@ -26,41 +36,6 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
-
-    const cleanUsernames = Array.from(
-      new Set(
-        (usernames ?? [])
-          .map((u) => (u || "").trim())
-          .filter(
-            (u) =>
-              u &&
-              u.toLowerCase() !== "desconhecido" &&
-              u !== "?" &&
-              !u.includes(" ")
-          )
-      )
-    );
-
-    if (cleanUsernames.length === 0) {
-      return NextResponse.json(
-        {
-          message:
-            "Não foi possível identificar o @ do ganhador para comentar automaticamente.",
-        },
-        { status: 400 }
-      );
-    }
-
-    const mentions = cleanUsernames.map((u) =>
-      u.startsWith("@") ? u : `@${u}`
-    );
-
-    const message =
-      mentions.length === 1
-        ? `Parabéns ${mentions[0]}! Você foi o ganhador do sorteio realizado pelo Sowish Sorteios.`
-        : `Parabéns ${mentions.join(
-            ", "
-          )}! Vocês foram os ganhadores do sorteio realizado pelo Sowish Sorteios.`;
 
     const supabaseServer = getSupabaseServer();
 
@@ -86,16 +61,87 @@ export async function POST(req: NextRequest) {
 
     const accessToken = igRow.long_lived_token as string;
 
-    const url = `https://graph.facebook.com/v20.0/${encodeURIComponent(
+    // DELETE comentário
+    if (action === "delete") {
+      if (!commentId) {
+        return NextResponse.json(
+          { message: "ID do comentário não informado para exclusão." },
+          { status: 400 }
+        );
+      }
+
+      const deleteUrl = `https://graph.facebook.com/v20.0/${encodeURIComponent(
+        commentId
+      )}?access_token=${encodeURIComponent(accessToken)}`;
+
+      const delRes = await fetch(deleteUrl, { method: "DELETE" });
+      const delJson = await delRes.json().catch(() => ({}));
+
+      if (!delRes.ok) {
+        console.error("Erro ao excluir comentário no Instagram:", delJson);
+        return NextResponse.json(
+          {
+            message:
+              delJson?.error?.message ??
+              "Erro ao excluir comentário no Instagram.",
+          },
+          { status: 400 }
+        );
+      }
+
+      return NextResponse.json({ ok: true }, { status: 200 });
+    }
+
+    // Criar mensagem base (caso não venha pronta)
+    let finalMessage = (message ?? "").trim();
+
+    if (!finalMessage) {
+      const cleanUsernames = Array.from(
+        new Set(
+          (usernames ?? [])
+            .map((u) => (u || "").trim())
+            .filter(
+              (u) =>
+                u &&
+                u.toLowerCase() !== "desconhecido" &&
+                u !== "?" &&
+                !u.includes(" ")
+            )
+        )
+      );
+
+      if (cleanUsernames.length === 0) {
+        return NextResponse.json(
+          {
+            message:
+              "Não foi possível identificar o @ do ganhador para comentar automaticamente.",
+          },
+          { status: 400 }
+        );
+      }
+
+      const mentions = cleanUsernames.map((u) =>
+        u.startsWith("@") ? u : `@${u}`
+      );
+
+      finalMessage =
+        mentions.length === 1
+          ? `Parabéns ${mentions[0]}! Você foi o ganhador do sorteio realizado pelo Sowish Sorteios.`
+          : `Parabéns ${mentions.join(
+              ", "
+            )}! Vocês foram os ganhadores do sorteio realizado pelo Sowish Sorteios.`;
+    }
+
+    const createUrl = `https://graph.facebook.com/v20.0/${encodeURIComponent(
       mediaId
     )}/comments?access_token=${encodeURIComponent(accessToken)}`;
 
-    const igRes = await fetch(url, {
+    const igRes = await fetch(createUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
       },
-      body: new URLSearchParams({ message }),
+      body: new URLSearchParams({ message: finalMessage }),
     });
 
     const igJson = await igRes.json().catch(() => ({}));
@@ -116,6 +162,7 @@ export async function POST(req: NextRequest) {
       {
         ok: true,
         id: igJson.id ?? null,
+        message: finalMessage,
       },
       { status: 200 }
     );
