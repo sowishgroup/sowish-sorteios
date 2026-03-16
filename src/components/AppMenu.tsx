@@ -146,7 +146,7 @@ export default function AppMenu({ children }: { children: React.ReactNode }) {
   if (!showMenu) return <>{children}</>;
 
   return (
-    <div className="min-h-screen bg-white/80 backdrop-blur-sm text-slate-900 flex flex-col">
+    <div className="min-h-screen text-slate-900 flex flex-col">
       <header className="sticky top-0 z-40 border-b border-slate-200/80 bg-white/85 backdrop-blur">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 flex h-20 items-center justify-between gap-4">
           <Link href="/dashboard" className="flex items-center gap-2 shrink-0">
