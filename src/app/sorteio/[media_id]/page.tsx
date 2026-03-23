@@ -10,6 +10,7 @@ type Participant = {
   id: string;
   username: string;
   text: string;
+  avatar_url?: string | null;
 };
 
 const ROLL_FAST_MS = 60;
@@ -434,21 +435,33 @@ export default function SorteioPage() {
       )}
 
       <div className="mx-auto max-w-6xl px-4 sm:px-6 py-6 sm:py-8 mt-4 md:mt-6 space-y-6">
-        <header className="space-y-1">
-          <p className="text-[11px] uppercase tracking-[0.3em] text-slate-500">
-            Sorteio
-          </p>
-          <h1 className="text-2xl font-semibold text-slate-900 md:text-3xl">
-            Configurar sorteio do{" "}
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#E1306C] via-[#F77737] to-[#FCAF45]">
-              post selecionado
-            </span>
-          </h1>
-          <p className="text-sm text-slate-500 mt-1">
-            Defina as regras, debite 1 crédito e deixe o Sowish escolher os
-            vencedores. Os nomes rodam na tela antes do resultado.
-          </p>
-        </header>
+        {showReveal && winners.length > 0 ? (
+          <header className="mx-auto max-w-2xl rounded-2xl border border-white/60 bg-white/85 backdrop-blur-sm px-4 py-3 text-center shadow-lg">
+            <p className="text-[11px] uppercase tracking-[0.3em] text-slate-500">
+              Resultado oficial
+            </p>
+            <h1 className="mt-1 text-2xl font-bold md:text-3xl bg-clip-text text-transparent bg-gradient-to-r from-[#E1306C] via-[#F77737] to-[#FCAF45]">
+              Ganhador{winners.length > 1 ? "es" : ""} do sorteio
+            </h1>
+            <div className="mx-auto mt-2 h-1.5 w-28 rounded-full bg-gradient-to-r from-[#E1306C] via-[#F77737] to-[#FCAF45]" />
+          </header>
+        ) : (
+          <header className="space-y-1 rounded-2xl border border-white/45 bg-white/80 backdrop-blur-sm p-4 shadow-sm">
+            <p className="text-[11px] uppercase tracking-[0.3em] text-slate-500">
+              Sorteio
+            </p>
+            <h1 className="text-2xl font-semibold text-slate-900 md:text-3xl">
+              Configurar sorteio do{" "}
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#E1306C] via-[#F77737] to-[#FCAF45]">
+                post selecionado
+              </span>
+            </h1>
+            <p className="text-sm text-slate-500 mt-1">
+              Defina as regras, debite 1 crédito e deixe o Sowish escolher os
+              vencedores. Os nomes rodam na tela antes do resultado.
+            </p>
+          </header>
+        )}
 
         {/* Tela da roleta: nomes rodando */}
         {rolling && participants.length > 0 && (
@@ -510,28 +523,20 @@ export default function SorteioPage() {
                     className="flex flex-col items-center text-center"
                   >
                     <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-gradient-to-br from-[#E1306C] via-[#F77737] to-[#FCAF45] p-[3px] shadow-lg flex items-center justify-center">
-                      <div className="w-full h-full rounded-full bg-white overflow-hidden flex items-center justify-center">
-                        <img
-                          src={`https://unavatar.io/instagram/${encodeURIComponent(
-                            w.username || ""
-                          )}`}
-                          alt={`Foto de @${w.username}`}
-                          className="h-full w-full object-cover"
-                          onError={(e) => {
-                            const target = e.currentTarget;
-                            target.style.display = "none";
-                            const parent = target.parentElement;
-                            if (parent && !parent.querySelector(".avatar-fallback")) {
-                              const fallback = document.createElement("span");
-                              fallback.className =
-                                "avatar-fallback text-3xl sm:text-4xl font-bold text-slate-700";
-                              fallback.textContent = (w.username || "?")
-                                .charAt(0)
-                                .toUpperCase();
-                              parent.appendChild(fallback);
-                            }
-                          }}
-                        />
+                      <div className="relative w-full h-full rounded-full bg-white overflow-hidden flex items-center justify-center">
+                        <span className="text-3xl sm:text-4xl font-bold text-slate-700">
+                          {(w.username || "?").charAt(0).toUpperCase()}
+                        </span>
+                        {w.avatar_url ? (
+                          <img
+                            src={w.avatar_url}
+                            alt={`Foto de @${w.username}`}
+                            className="absolute inset-0 h-full w-full object-cover"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).style.display = "none";
+                            }}
+                          />
+                        ) : null}
                       </div>
                     </div>
                     <p className="mt-2 font-semibold text-slate-800">

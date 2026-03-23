@@ -12,7 +12,55 @@ type Comment = {
   id: string;
   text: string;
   username: string;
+  user_id?: string | null;
+  avatar_url?: string | null;
 };
+
+async function enrichProfilePictures(
+  comments: Comment[],
+  accessToken: string
+): Promise<Comment[]> {
+  const ids = Array.from(
+    new Set(
+      comments
+        .map((c) => (c.user_id ?? "").trim())
+        .filter((id) => id.length > 0)
+    )
+  );
+
+  if (ids.length === 0) return comments;
+
+  const avatarMap = new Map<string, string>();
+
+  await Promise.all(
+    ids.map(async (id) => {
+      try {
+        const url = `https://graph.facebook.com/v20.0/${encodeURIComponent(
+          id
+        )}?fields=id,username,profile_picture_url&access_token=${encodeURIComponent(
+          accessToken
+        )}`;
+        const res = await fetch(url);
+        const json = await res.json().catch(() => ({}));
+        if (
+          res.ok &&
+          json &&
+          typeof json.profile_picture_url === "string" &&
+          json.profile_picture_url.trim()
+        ) {
+          avatarMap.set(id, json.profile_picture_url.trim());
+        }
+      } catch (_) {
+        // Ignorar falhas individuais de avatar para não quebrar o sorteio.
+      }
+    })
+  );
+
+  return comments.map((c) => ({
+    ...c,
+    avatar_url: c.user_id ? avatarMap.get(c.user_id) ?? null : null,
+  }));
+}
 
 async function fetchAllComments(
   mediaId: string,
@@ -52,6 +100,10 @@ async function fetchAllComments(
           id: c.id,
           text: c.text ?? "",
           username,
+          user_id:
+            from && typeof from.id === "string" && from.id.trim()
+              ? from.id.trim()
+              : null,
         });
       }
     }
@@ -184,8 +236,9 @@ export async function POST(req: NextRequest) {
     if (uniquePerUser) {
       const seen = new Set<string>();
       filtered = filtered.filter((c) => {
-        if (seen.has(c.username)) return false;
-        seen.add(c.username);
+        const key = c.user_id || c.username;
+        if (seen.has(key)) return false;
+        seen.add(key);
         return true;
       });
     }
@@ -200,20 +253,22 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const filteredWithAvatar = await enrichProfilePictures(filtered, accessToken);
+
     // Preview para exibir quantidade de válidos antes de sortear
     if (previewOnly) {
       return NextResponse.json(
         {
-          participants: filtered,
+          participants: filteredWithAvatar,
           totalComments: allComments.length,
-          totalValidAfterFilters: filtered.length,
+          totalValidAfterFilters: filteredWithAvatar.length,
         },
         { status: 200 }
       );
     }
 
     // 5) Embaralhar e selecionar vencedores
-    const embaralhados = shuffle(filtered);
+    const embaralhados = shuffle(filteredWithAvatar);
     const winners = embaralhados.slice(0, numWinners);
 
     // 6) Registrar no histórico (sorteios_realizados)
@@ -227,9 +282,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       {
         winners,
-        participants: filtered,
+        participants: filteredWithAvatar,
         totalComments: allComments.length,
-        totalValidAfterFilters: filtered.length,
+        totalValidAfterFilters: filteredWithAvatar.length,
         remainingCredits: novoSaldo,
       },
       { status: 200 }
