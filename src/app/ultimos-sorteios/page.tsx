@@ -12,14 +12,30 @@ type SorteioRow = {
   created_at: string;
 };
 
+type MediaPreview = {
+  id: string;
+  caption?: string;
+  media_url?: string;
+  thumbnail_url?: string;
+  permalink?: string;
+  media_type?: string;
+  like_count?: number;
+  comments_count?: number;
+};
+
 export default function UltimosSorteiosPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [list, setList] = useState<SorteioRow[]>([]);
+  const [mediaMap, setMediaMap] = useState<Record<string, MediaPreview>>({});
 
   useEffect(() => {
     const load = async () => {
-      const { data: { user }, error } = await supabase.auth.getUser();
+      const {
+        data: { session },
+        error,
+      } = await supabase.auth.getSession();
+      const user = session?.user;
       if (error || !user) {
         router.replace("/");
         return;
@@ -30,7 +46,37 @@ export default function UltimosSorteiosPage() {
         .eq("user_id", user.id)
         .order("created_at", { ascending: false })
         .limit(20);
-      if (!listError) setList((data ?? []) as SorteioRow[]);
+      const rows = (data ?? []) as SorteioRow[];
+      if (!listError) setList(rows);
+
+      const token = session?.access_token;
+      if (!listError && token && rows.length > 0) {
+        const mediaIds = [...new Set(rows.map((r) => r.media_id).filter(Boolean))];
+        const details = await Promise.all(
+          mediaIds.map(async (mediaId) => {
+            try {
+              const res = await fetch(`/api/instagram/media/${mediaId}`, {
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
+              });
+              if (!res.ok) return null;
+              const json = (await res.json()) as MediaPreview;
+              return [mediaId, json] as const;
+            } catch {
+              return null;
+            }
+          }),
+        );
+
+        const nextMap: Record<string, MediaPreview> = {};
+        for (const entry of details) {
+          if (!entry) continue;
+          const [mediaId, media] = entry;
+          nextMap[mediaId] = media;
+        }
+        setMediaMap(nextMap);
+      }
       setLoading(false);
     };
     load();
@@ -62,20 +108,58 @@ export default function UltimosSorteiosPage() {
             {list.map((s) => (
               <li
                 key={s.id}
-                className="rounded-xl border border-slate-200 bg-white p-4 flex flex-wrap items-center justify-between gap-2"
+                className="rounded-xl border border-slate-200 bg-white p-3 sm:p-4"
               >
-                <div>
-                  <p className="text-sm font-medium text-slate-800">
-                    Post ID: {s.media_id}
-                  </p>
-                  <p className="text-xs text-slate-500 mt-1">
-                    {new Date(s.created_at).toLocaleString("pt-BR")}
-                  </p>
-                  {Array.isArray(s.winners) && s.winners.length > 0 && (
-                    <p className="text-xs text-slate-600 mt-1">
-                      Ganhador(es): {s.winners.map((w: { username?: string }) => `@${w.username ?? "?"}`).join(", ")}
+                <div className="grid gap-3 sm:grid-cols-[120px_minmax(0,1fr)]">
+                  <div className="relative h-[110px] overflow-hidden rounded-lg bg-slate-100">
+                    {mediaMap[s.media_id]?.thumbnail_url || mediaMap[s.media_id]?.media_url ? (
+                      <img
+                        src={mediaMap[s.media_id]?.thumbnail_url || mediaMap[s.media_id]?.media_url}
+                        alt={mediaMap[s.media_id]?.caption || "Post sorteado"}
+                        className="absolute inset-0 h-full w-full object-cover"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <div className="absolute inset-0 flex items-center justify-center text-[11px] text-slate-500">
+                        Sem prévia
+                      </div>
+                    )}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-slate-800 line-clamp-2">
+                      {mediaMap[s.media_id]?.caption?.trim() || `Post ${s.media_id}`}
                     </p>
-                  )}
+                    <p className="text-xs text-slate-500 mt-1">
+                      {new Date(s.created_at).toLocaleString("pt-BR")}
+                    </p>
+                    <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-slate-500">
+                      <span>Post ID: {s.media_id}</span>
+                      {typeof mediaMap[s.media_id]?.like_count === "number" && (
+                        <span>{mediaMap[s.media_id]?.like_count} curtidas</span>
+                      )}
+                      {typeof mediaMap[s.media_id]?.comments_count === "number" && (
+                        <span>{mediaMap[s.media_id]?.comments_count} comentários</span>
+                      )}
+                      {mediaMap[s.media_id]?.permalink && (
+                        <a
+                          href={mediaMap[s.media_id]?.permalink}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="font-semibold text-[#0240ac] hover:underline"
+                        >
+                          Ver post no Instagram
+                        </a>
+                      )}
+                    </div>
+                    {Array.isArray(s.winners) && s.winners.length > 0 && (
+                      <p className="text-xs text-slate-700 mt-2">
+                        Ganhador(es):{" "}
+                        {s.winners
+                          .map((w: { username?: string }) => `@${w.username ?? "?"}`)
+                          .join(", ")}
+                      </p>
+                    )}
+                  </div>
                 </div>
               </li>
             ))}
