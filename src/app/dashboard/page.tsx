@@ -147,6 +147,30 @@ export default function DashboardPage() {
           )}
         </header>
 
+        <section className="overflow-hidden rounded-2xl border border-slate-200/70 bg-white/55 backdrop-blur-sm shadow-sm">
+          <div className="relative aspect-[16/9] w-full sm:aspect-[21/9]">
+            <img
+              src="/banner-home.png"
+              alt="Banner principal Sowish Sorteios"
+              className="absolute inset-0 h-full w-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-slate-900/65 via-slate-900/30 to-transparent" />
+            <div className="absolute inset-0 flex items-end p-4 sm:p-6">
+              <div className="max-w-xl rounded-xl bg-white/80 px-4 py-3 backdrop-blur-sm">
+                <p className="text-[11px] uppercase tracking-[0.25em] text-slate-500">
+                  Destaque
+                </p>
+                <h2 className="mt-1 text-base font-semibold text-slate-900 sm:text-lg">
+                  Sorteios com visual profissional e fluxo simples
+                </h2>
+                <p className="mt-1 text-xs text-slate-600 sm:text-sm">
+                  Escolha seu post, carregue comentários válidos e realize o sorteio em poucos cliques.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
         <section className="grid gap-5 md:grid-cols-[minmax(0,2.1fr)_minmax(0,1.2fr)]">
           <div className="space-y-5">
             <div className="rounded-2xl border border-slate-200/80 bg-white/65 p-5 shadow-sm">
