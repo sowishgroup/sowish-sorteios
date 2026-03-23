@@ -44,6 +44,15 @@ CREATE TABLE IF NOT EXISTS public.sorteios_realizados (
 );
 CREATE INDEX IF NOT EXISTS idx_sorteios_user_created ON public.sorteios_realizados(user_id, created_at DESC);
 
+-- 6) Configurações globais do sistema (Asaas e integrações)
+CREATE TABLE IF NOT EXISTS public.app_settings (
+  id integer PRIMARY KEY DEFAULT 1,
+  asaas_api_key text,
+  asaas_webhook_url text,
+  updated_at timestamptz DEFAULT now(),
+  CONSTRAINT app_settings_single_row CHECK (id = 1)
+);
+
 -- Índices para buscas comuns
 CREATE INDEX IF NOT EXISTS idx_user_instagram_user_id ON public.user_instagram_accounts(user_id);
 CREATE INDEX IF NOT EXISTS idx_announcements_active ON public.announcements(is_active) WHERE is_active = true;
@@ -77,6 +86,7 @@ ALTER TABLE public.user_credits ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.user_instagram_accounts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.announcements ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.sorteios_realizados ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.app_settings ENABLE ROW LEVEL SECURITY;
 
 -- Profiles: usuário vê e atualiza só o próprio perfil
 DROP POLICY IF EXISTS "Users can read own profile" ON public.profiles;

@@ -59,6 +59,7 @@ export default function SorteioPage() {
   const [rollingIndex, setRollingIndex] = useState(0);
   const [showReveal, setShowReveal] = useState(false);
   const [countdown, setCountdown] = useState<number | null>(null);
+  const [targetWinnerId, setTargetWinnerId] = useState<string | null>(null);
 
   const resultImageRef = useRef<HTMLDivElement>(null);
   /** Ref do card sem imagem externa, só para captura (evita CORS no download) */
@@ -118,6 +119,38 @@ export default function SorteioPage() {
   useEffect(() => {
     if (!rolling || participants.length === 0) return;
 
+    const finishWithCountdown = () => {
+      const targetIndex = targetWinnerId
+        ? participants.findIndex((p) => p.id === targetWinnerId)
+        : -1;
+
+      setCountdown(3);
+      let seconds = 3;
+
+      // Durante a contagem, continua passando por nomes para não "travar" em nome errado.
+      const countdownInterval = setInterval(() => {
+        setRollingIndex((i) => (i + 1) % participants.length);
+        seconds -= 1;
+        if (seconds > 0) {
+          setCountdown(seconds);
+          return;
+        }
+
+        clearInterval(countdownInterval);
+        setCountdown(null);
+
+        // Trava no ganhador real logo antes de revelar.
+        if (targetIndex >= 0) {
+          setRollingIndex(targetIndex);
+        }
+
+        setTimeout(() => {
+          setRolling(false);
+          setShowReveal(true);
+        }, 180);
+      }, 360);
+    };
+
     rollStartTime.current = Date.now();
 
     const tick = () => {
@@ -127,14 +160,7 @@ export default function SorteioPage() {
           clearInterval(rollInterval.current);
           rollInterval.current = null;
         }
-        setCountdown(3);
-        setTimeout(() => setCountdown(2), 350);
-        setTimeout(() => setCountdown(1), 700);
-        setTimeout(() => {
-          setCountdown(null);
-          setRolling(false);
-          setShowReveal(true);
-        }, 1100);
+        finishWithCountdown();
         return;
       }
       setRollingIndex((i) => (i + 1) % participants.length);
@@ -151,14 +177,7 @@ export default function SorteioPage() {
           const e = Date.now() - rollStartTime.current;
           if (e >= ROLL_DURATION_MS) {
             if (rollInterval.current) clearInterval(rollInterval.current);
-            setCountdown(3);
-            setTimeout(() => setCountdown(2), 350);
-            setTimeout(() => setCountdown(1), 700);
-            setTimeout(() => {
-              setCountdown(null);
-              setRolling(false);
-              setShowReveal(true);
-            }, 1100);
+            finishWithCountdown();
             return;
           }
           setRollingIndex((i) => (i + 1) % participants.length);
@@ -171,7 +190,7 @@ export default function SorteioPage() {
       if (rollInterval.current) clearInterval(rollInterval.current);
       clearInterval(slowDown);
     };
-  }, [rolling, participants.length]);
+  }, [rolling, participants, targetWinnerId]);
 
   const numWinners = Math.max(1, parseInt(numWinnersInput, 10) || 1);
 
@@ -252,6 +271,7 @@ export default function SorteioPage() {
     setCommentId(null);
     setCommentText("");
     setCountdown(null);
+    setTargetWinnerId(null);
     setWinners([]);
     setShowReveal(false);
 
@@ -287,6 +307,7 @@ export default function SorteioPage() {
 
       setWinners(win);
       setParticipants(part.length > 0 ? part : win);
+      setTargetWinnerId(win[0]?.id ?? null);
       setParticipantsCount(part.length > 0 ? part.length : win.length);
       setValidCommentsCount(
         typeof data.totalValidAfterFilters === "number"

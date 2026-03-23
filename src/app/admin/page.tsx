@@ -17,6 +17,9 @@ export default function AdminPage() {
   const [grantAmount, setGrantAmount] = useState(1);
   const [broadcastTitle, setBroadcastTitle] = useState("");
   const [broadcastMessage, setBroadcastMessage] = useState("");
+  const [asaasApiKey, setAsaasApiKey] = useState("");
+  const [asaasWebhookUrl, setAsaasWebhookUrl] = useState("");
+  const [savingAsaas, setSavingAsaas] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
@@ -54,14 +57,31 @@ export default function AdminPage() {
       setIsAdmin(true);
 
       try {
-        const res = await fetch("/api/admin/summary", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ adminId: user.id }),
-        });
-        if (res.ok) {
-          const data = (await res.json()) as Summary;
+        const [summaryRes, asaasRes] = await Promise.all([
+          fetch("/api/admin/summary", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ adminId: user.id }),
+          }),
+          fetch("/api/admin/asaas-settings", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ adminId: user.id }),
+          }),
+        ]);
+
+        if (summaryRes.ok) {
+          const data = (await summaryRes.json()) as Summary;
           setSummary(data);
+        }
+
+        if (asaasRes.ok) {
+          const settings = (await asaasRes.json()) as {
+            asaasApiKey?: string;
+            asaasWebhookUrl?: string;
+          };
+          setAsaasApiKey(settings.asaasApiKey ?? "");
+          setAsaasWebhookUrl(settings.asaasWebhookUrl ?? "");
         }
       } catch (e) {
         console.error(e);
@@ -134,6 +154,44 @@ export default function AdminPage() {
     } catch (e) {
       console.error(e);
       setErrorMsg("Erro inesperado ao enviar comunicado.");
+    }
+  };
+
+  const handleSaveAsaasSettings = async () => {
+    if (!adminId) return;
+    setSavingAsaas(true);
+    setFeedback(null);
+    setErrorMsg(null);
+
+    try {
+      const res = await fetch("/api/admin/asaas-settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          adminId,
+          asaasApiKey,
+          asaasWebhookUrl,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setErrorMsg(
+          data.message ??
+            "Erro ao salvar configurações da integração Asaas."
+        );
+        return;
+      }
+
+      setAsaasApiKey(data.asaasApiKey ?? "");
+      setAsaasWebhookUrl(data.asaasWebhookUrl ?? "");
+      setFeedback("Configurações Asaas salvas com sucesso.");
+    } catch (e) {
+      console.error(e);
+      setErrorMsg("Erro inesperado ao salvar configurações Asaas.");
+    } finally {
+      setSavingAsaas(false);
     }
   };
 
@@ -280,6 +338,50 @@ export default function AdminPage() {
               Publicar comunicado
             </button>
           </div>
+        </section>
+
+        <section className="rounded-2xl border border-slate-200 bg-slate-50/80 p-5 space-y-4">
+          <p className="text-sm font-semibold text-slate-700">
+            Configurações de produção Asaas (Pix)
+          </p>
+          <p className="text-xs text-slate-500">
+            Cadastre a chave de API e URL de webhook que serão usadas para
+            liberar créditos automaticamente após pagamento Pix confirmado.
+          </p>
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-slate-600">
+                Chave API Asaas (produção)
+              </label>
+              <input
+                type="text"
+                value={asaasApiKey}
+                onChange={(e) => setAsaasApiKey(e.target.value)}
+                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-[#E1306C] focus:border-[#E1306C]"
+                placeholder="$aact_prod_..."
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-slate-600">
+                URL de Webhook Asaas
+              </label>
+              <input
+                type="url"
+                value={asaasWebhookUrl}
+                onChange={(e) => setAsaasWebhookUrl(e.target.value)}
+                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-[#E1306C] focus:border-[#E1306C]"
+                placeholder="https://seu-dominio.com/api/asaas/webhook"
+              />
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={handleSaveAsaasSettings}
+            disabled={savingAsaas}
+            className="w-full md:w-auto rounded-xl bg-gradient-to-r from-[#E1306C] to-[#F77737] hover:brightness-110 text-white font-semibold py-2.5 px-5 text-sm transition disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            {savingAsaas ? "Salvando..." : "Salvar configuração Asaas"}
+          </button>
         </section>
 
         {(feedback || errorMsg) && (
