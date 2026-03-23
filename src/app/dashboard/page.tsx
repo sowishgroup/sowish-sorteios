@@ -173,27 +173,41 @@ export default function DashboardPage() {
                 </Link>
               </div>
             </div>
-            <div className="rounded-2xl border border-slate-200/80 bg-white/85 p-4">
+            <div className="rounded-2xl border border-[#E7D3DC] bg-gradient-to-br from-white via-[#FFF9FB] to-[#FFF4EF] p-4 shadow-sm">
               <div className="flex items-center justify-between gap-2">
                 <p className="text-xs font-semibold text-slate-700">
                   Passo a passo rápido
                 </p>
-                <span className="rounded-full bg-gradient-to-r from-[#E1306C] to-[#F77737] px-2 py-1 text-[10px] font-semibold text-white">
+                <span className="rounded-full bg-gradient-to-r from-[#E1306C] to-[#F77737] px-2.5 py-1 text-[10px] font-semibold text-white shadow-sm">
                   4 passos
                 </span>
               </div>
+              <p className="mt-1 text-[11px] text-slate-500">
+                Fluxo recomendado para sortear com segurança e clareza para seu público.
+              </p>
               <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 {[
-                  "1) Conecte o Instagram",
-                  "2) Escolha o post em Meus posts",
-                  "3) Carregue os comentários válidos",
-                  "4) Realize o sorteio e publique o resultado",
-                ].map((step) => (
+                  { title: "Conecte Instagram", desc: "Valide sua conta para carregar posts e comentários.", icon: "🔗" },
+                  { title: "Escolha o post", desc: "Selecione o conteúdo da campanha em Meus posts.", icon: "📌" },
+                  { title: "Carregue comentários", desc: "Veja a quantidade válida antes do sorteio.", icon: "💬" },
+                  { title: "Realize e publique", desc: "Sorteie e poste o resultado com 1 clique.", icon: "🏆" },
+                ].map((step, idx) => (
                   <div
-                    key={step}
-                    className="rounded-lg border border-slate-200/70 bg-white/90 px-3 py-2"
+                    key={step.title}
+                    className="rounded-xl border border-slate-200/80 bg-white/95 px-3 py-2.5"
                   >
-                    <p className="text-[11px] font-medium text-slate-700">{step}</p>
+                    <div className="flex items-center gap-2">
+                      <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-r from-[#E1306C] to-[#F77737] text-[11px] font-bold text-white">
+                        {idx + 1}
+                      </span>
+                      <span className="text-base leading-none">{step.icon}</span>
+                      <p className="text-[11px] font-semibold text-slate-800">
+                        {step.title}
+                      </p>
+                    </div>
+                    <p className="mt-1.5 text-[11px] text-slate-600">
+                      {step.desc}
+                    </p>
                   </div>
                 ))}
               </div>
