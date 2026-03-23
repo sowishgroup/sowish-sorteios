@@ -17,8 +17,9 @@ export default function AdminPage() {
   const [grantAmount, setGrantAmount] = useState(1);
   const [broadcastTitle, setBroadcastTitle] = useState("");
   const [broadcastMessage, setBroadcastMessage] = useState("");
-  const [asaasApiKey, setAsaasApiKey] = useState("");
   const [asaasWebhookUrl, setAsaasWebhookUrl] = useState("");
+  const [asaasApiKeyConfigured, setAsaasApiKeyConfigured] = useState(false);
+  const [webhookTokenConfigured, setWebhookTokenConfigured] = useState(false);
   const [savingAsaas, setSavingAsaas] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -77,11 +78,13 @@ export default function AdminPage() {
 
         if (asaasRes.ok) {
           const settings = (await asaasRes.json()) as {
-            asaasApiKey?: string;
             asaasWebhookUrl?: string;
+            asaasApiKeyConfigured?: boolean;
+            webhookTokenConfigured?: boolean;
           };
-          setAsaasApiKey(settings.asaasApiKey ?? "");
           setAsaasWebhookUrl(settings.asaasWebhookUrl ?? "");
+          setAsaasApiKeyConfigured(Boolean(settings.asaasApiKeyConfigured));
+          setWebhookTokenConfigured(Boolean(settings.webhookTokenConfigured));
         }
       } catch (e) {
         console.error(e);
@@ -169,7 +172,6 @@ export default function AdminPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           adminId,
-          asaasApiKey,
           asaasWebhookUrl,
         }),
       });
@@ -184,8 +186,9 @@ export default function AdminPage() {
         return;
       }
 
-      setAsaasApiKey(data.asaasApiKey ?? "");
       setAsaasWebhookUrl(data.asaasWebhookUrl ?? "");
+      setAsaasApiKeyConfigured(Boolean(data.asaasApiKeyConfigured));
+      setWebhookTokenConfigured(Boolean(data.webhookTokenConfigured));
       setFeedback("Configurações Asaas salvas com sucesso.");
     } catch (e) {
       console.error(e);
@@ -345,21 +348,25 @@ export default function AdminPage() {
             Configurações de produção Asaas (Pix)
           </p>
           <p className="text-xs text-slate-500">
-            Cadastre a chave de API e URL de webhook que serão usadas para
+            Cadastre a URL de webhook. A chave API e token do webhook devem ficar
+            no ambiente do servidor (variáveis seguras) para
             liberar créditos automaticamente após pagamento Pix confirmado.
           </p>
           <div className="grid gap-4 md:grid-cols-2">
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-slate-600">
-                Chave API Asaas (produção)
-              </label>
-              <input
-                type="text"
-                value={asaasApiKey}
-                onChange={(e) => setAsaasApiKey(e.target.value)}
-                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-[#E1306C] focus:border-[#E1306C]"
-                placeholder="$aact_prod_..."
-              />
+            <div className="rounded-lg border border-slate-200 bg-white p-3 text-xs text-slate-600 space-y-1">
+              <p className="font-semibold text-slate-700">Status de segurança</p>
+              <p>
+                Chave API no servidor:{" "}
+                <span className={asaasApiKeyConfigured ? "text-emerald-700 font-semibold" : "text-red-700 font-semibold"}>
+                  {asaasApiKeyConfigured ? "Configurada" : "Não configurada"}
+                </span>
+              </p>
+              <p>
+                Token do webhook no servidor:{" "}
+                <span className={webhookTokenConfigured ? "text-emerald-700 font-semibold" : "text-red-700 font-semibold"}>
+                  {webhookTokenConfigured ? "Configurado" : "Não configurado"}
+                </span>
+              </p>
             </div>
             <div className="space-y-1">
               <label className="text-xs font-medium text-slate-600">

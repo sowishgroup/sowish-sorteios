@@ -47,10 +47,20 @@ CREATE INDEX IF NOT EXISTS idx_sorteios_user_created ON public.sorteios_realizad
 -- 6) Configurações globais do sistema (Asaas e integrações)
 CREATE TABLE IF NOT EXISTS public.app_settings (
   id integer PRIMARY KEY DEFAULT 1,
-  asaas_api_key text,
   asaas_webhook_url text,
   updated_at timestamptz DEFAULT now(),
   CONSTRAINT app_settings_single_row CHECK (id = 1)
+);
+
+-- 7) Documento sensível do usuário (CPF/CNPJ) - armazenado de forma criptografada
+CREATE TABLE IF NOT EXISTS public.user_documents (
+  user_id uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  document_type text NOT NULL CHECK (document_type IN ('CPF', 'CNPJ')),
+  document_masked text NOT NULL,
+  document_hash text NOT NULL UNIQUE,
+  document_encrypted text NOT NULL,
+  created_at timestamptz DEFAULT now(),
+  updated_at timestamptz DEFAULT now()
 );
 
 -- Índices para buscas comuns
@@ -87,6 +97,23 @@ ALTER TABLE public.user_instagram_accounts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.announcements ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.sorteios_realizados ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.app_settings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.user_documents ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.user_documents FORCE ROW LEVEL SECURITY;
+
+-- 8) Histórico de eventos de pagamento Asaas (idempotência de webhook)
+CREATE TABLE IF NOT EXISTS public.asaas_payment_events (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  payment_id text NOT NULL UNIQUE,
+  event text,
+  status text,
+  external_reference text,
+  user_id uuid REFERENCES auth.users(id) ON DELETE SET NULL,
+  credits_added integer DEFAULT 0,
+  credited boolean DEFAULT false,
+  created_at timestamptz DEFAULT now(),
+  updated_at timestamptz DEFAULT now()
+);
+ALTER TABLE public.asaas_payment_events ENABLE ROW LEVEL SECURITY;
 
 -- Profiles: usuário vê e atualiza só o próprio perfil
 DROP POLICY IF EXISTS "Users can read own profile" ON public.profiles;
@@ -124,6 +151,7 @@ CREATE POLICY "Users can read own sorteios" ON public.sorteios_realizados
 -- As APIs do app usam SERVICE_ROLE_KEY e ignoram RLS para escrever em todas as tabelas.
 -- Para INSERT/UPDATE/DELETE via service role funcionar, não criamos políticas de escrita
 -- para o cliente; o backend faz as escritas.
+-- IMPORTANTE: não criar políticas de leitura para public.user_documents.
 
 -- Storage: bucket para fotos de perfil (avatars)
 INSERT INTO storage.buckets (id, name, public)

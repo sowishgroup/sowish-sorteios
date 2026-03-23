@@ -10,13 +10,12 @@ const getSupabaseServer = () => {
 
 type Body = {
   adminId?: string;
-  asaasApiKey?: string;
   asaasWebhookUrl?: string;
 };
 
 export async function POST(req: NextRequest) {
   try {
-    const { adminId, asaasApiKey, asaasWebhookUrl } = (await req
+    const { adminId, asaasWebhookUrl } = (await req
       .json()
       .catch(() => ({}))) as Body;
 
@@ -42,8 +41,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const shouldSave =
-      typeof asaasApiKey === "string" || typeof asaasWebhookUrl === "string";
+    const shouldSave = typeof asaasWebhookUrl === "string";
 
     if (shouldSave) {
       const { error: upsertError } = await supabaseServer
@@ -51,7 +49,6 @@ export async function POST(req: NextRequest) {
         .upsert(
           {
             id: 1,
-            asaas_api_key: (asaasApiKey ?? "").trim() || null,
             asaas_webhook_url: (asaasWebhookUrl ?? "").trim() || null,
             updated_at: new Date().toISOString(),
           },
@@ -74,7 +71,7 @@ export async function POST(req: NextRequest) {
 
     const { data: settings, error: getError } = await supabaseServer
       .from("app_settings")
-      .select("asaas_api_key, asaas_webhook_url")
+      .select("asaas_webhook_url")
       .eq("id", 1)
       .maybeSingle();
 
@@ -93,8 +90,9 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(
       {
-        asaasApiKey: settings?.asaas_api_key ?? "",
         asaasWebhookUrl: settings?.asaas_webhook_url ?? "",
+        asaasApiKeyConfigured: Boolean(process.env.ASAAS_API_KEY),
+        webhookTokenConfigured: Boolean(process.env.ASAAS_WEBHOOK_TOKEN),
       },
       { status: 200 }
     );

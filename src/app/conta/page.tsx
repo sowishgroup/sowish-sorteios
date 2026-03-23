@@ -20,6 +20,9 @@ export default function ContaPage() {
   const [email, setEmail] = useState<string | null>(null);
   const [instagramConnected, setInstagramConnected] = useState(false);
   const [disconnecting, setDisconnecting] = useState(false);
+  const [documentType, setDocumentType] = useState<"CPF" | "CNPJ">("CPF");
+  const [documentNumber, setDocumentNumber] = useState("");
+  const [documentMasked, setDocumentMasked] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -68,6 +71,31 @@ export default function ContaPage() {
       );
       setCredits(creditsData?.saldo_creditos ?? 0);
       setInstagramConnected(!!igData);
+
+      try {
+        const { data: sessionData } = await supabase.auth.getSession();
+        const token = sessionData.session?.access_token;
+        if (token) {
+          const docRes = await fetch("/api/account/document", {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (docRes.ok) {
+            const doc = (await docRes.json()) as {
+              documentType?: "CPF" | "CNPJ" | null;
+              documentNumber?: string;
+              documentMasked?: string | null;
+            };
+            if (doc.documentType === "CPF" || doc.documentType === "CNPJ") {
+              setDocumentType(doc.documentType);
+            }
+            setDocumentNumber(doc.documentNumber ?? "");
+            setDocumentMasked(doc.documentMasked ?? null);
+          }
+        }
+      } catch (e) {
+        console.error("Falha ao carregar documento do usuário:", e);
+      }
+
       setLoading(false);
     };
 
@@ -145,6 +173,31 @@ export default function ContaPage() {
       });
 
       if (error) throw error;
+
+      const digits = documentNumber.replace(/\D/g, "");
+      if (digits.length > 0) {
+        const { data: sessionData } = await supabase.auth.getSession();
+        const token = sessionData.session?.access_token;
+        if (!token) throw new Error("Sessão inválida para salvar documento.");
+        const docRes = await fetch("/api/account/document", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            documentType,
+            documentNumber: digits,
+          }),
+        });
+        const docJson = await docRes.json().catch(() => ({}));
+        if (!docRes.ok) {
+          throw new Error(
+            docJson?.message ?? "Erro ao salvar CPF/CNPJ de forma segura."
+          );
+        }
+        setDocumentMasked((docJson?.documentMasked as string) ?? null);
+      }
 
       setSuccessMsg("Dados atualizados com sucesso.");
     } catch (err: any) {
@@ -317,6 +370,46 @@ export default function ContaPage() {
                     className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-[#E1306C] focus:border-[#E1306C]"
                     placeholder="Como quer aparecer nos relatórios de sorteio"
                   />
+                </div>
+                <div className="grid gap-3 sm:grid-cols-[140px_minmax(0,1fr)]">
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium text-slate-600">
+                      Tipo
+                    </label>
+                    <select
+                      value={documentType}
+                      onChange={(e) =>
+                        setDocumentType(
+                          e.target.value === "CNPJ" ? "CNPJ" : "CPF"
+                        )
+                      }
+                      className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-[#E1306C] focus:border-[#E1306C]"
+                    >
+                      <option value="CPF">CPF</option>
+                      <option value="CNPJ">CNPJ</option>
+                    </select>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium text-slate-600">
+                      CPF/CNPJ (seguro)
+                    </label>
+                    <input
+                      type="text"
+                      value={documentNumber}
+                      onChange={(e) => setDocumentNumber(e.target.value)}
+                      className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-[#E1306C] focus:border-[#E1306C]"
+                      placeholder={
+                        documentType === "CPF"
+                          ? "Somente números (11)"
+                          : "Somente números (14)"
+                      }
+                    />
+                    {documentMasked && (
+                      <p className="text-[11px] text-slate-500">
+                        Documento salvo com segurança: {documentMasked}
+                      </p>
+                    )}
+                  </div>
                 </div>
               </div>
 
