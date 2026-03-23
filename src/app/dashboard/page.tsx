@@ -173,36 +173,39 @@ export default function DashboardPage() {
 
             <div className="grid gap-4 md:grid-cols-2">
               <div className="rounded-2xl border border-slate-200/80 bg-white/65 p-4">
-                <p className="text-xs font-semibold text-slate-700">
-                  Como fazer seu sorteio
-                </p>
-                <ol className="mt-3 space-y-2 text-xs text-slate-600">
-                  <li>
-                    <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#E1306C] text-[10px] font-bold text-white mr-1">
-                      1
-                    </span>
-                    Conecte o Instagram oficial da campanha no topo da tela.
-                  </li>
-                  <li>
-                    <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#F77737] text-[10px] font-bold text-white mr-1">
-                      2
-                    </span>
-                    Vá em <span className="font-semibold">Meus posts</span> e escolha o post do sorteio.
-                  </li>
-                  <li>
-                    <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#FCAF45] text-[10px] font-bold text-white mr-1">
-                      3
-                    </span>
-                    Defina palavra-chave, número de ganhadores e clique em{" "}
-                    <span className="font-semibold">Realizar Sorteio</span>.
-                  </li>
-                  <li>
-                    <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500 text-[10px] font-bold text-white mr-1">
-                      4
-                    </span>
-                    Compartilhe o resultado no WhatsApp ou baixe a imagem em formato story.
-                  </li>
-                </ol>
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-xs font-semibold text-slate-700">
+                    Como fazer seu sorteio
+                  </p>
+                  <span className="rounded-full bg-gradient-to-r from-[#E1306C] to-[#F77737] px-2 py-1 text-[10px] font-semibold text-white">
+                    Passo a passo
+                  </span>
+                </div>
+                <div className="mt-3 grid gap-2">
+                  {[
+                    "Conecte Instagram",
+                    "Vá em Meus posts",
+                    "Selecione o post do sorteio",
+                    "Defina número de ganhadores",
+                    "Defina se tem palavra-chave no sorteio",
+                    "Selecione se a pessoa participa só 1 vez",
+                    "Clique em Carregar comentários",
+                    "Clique em Realizar sorteio",
+                    "Se quiser, comente automaticamente no post com o ganhador",
+                  ].map((step, idx) => (
+                    <div
+                      key={step}
+                      className="flex items-start gap-2 rounded-lg border border-slate-200/70 bg-white/85 px-2.5 py-2"
+                    >
+                      <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-gradient-to-r from-[#E1306C] via-[#F77737] to-[#FCAF45] text-[10px] font-bold text-white">
+                        {idx + 1}
+                      </span>
+                      <p className="text-[11px] font-medium text-slate-700">
+                        {step}
+                      </p>
+                    </div>
+                  ))}
+                </div>
               </div>
               <div className="rounded-2xl border border-slate-200/80 bg-white/65 p-4">
                 <p className="text-xs font-semibold text-slate-700">
