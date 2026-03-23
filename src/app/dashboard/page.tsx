@@ -201,103 +201,37 @@ export default function DashboardPage() {
           </div>
         </section>
 
-        <section className="grid gap-5 md:grid-cols-[minmax(0,2.1fr)_minmax(0,1.2fr)]">
-          <div className="space-y-5">
-            <div className="rounded-2xl border border-slate-200/80 bg-white/65 p-5 shadow-sm">
-              <div className="flex items-center justify-between gap-4">
-                <div>
-                  <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
-                    Créditos disponíveis
-                  </p>
-                  <p className="mt-2 text-4xl font-bold tracking-tight text-slate-900">
-                    {credits ?? 0}
-                  </p>
-                  <p className="mt-2 text-[11px] text-slate-500">
-                    Cada crédito = 1 sorteio. Compre mais em Comprar no menu.
-                  </p>
-                </div>
-                <div className="relative h-20 w-20 rounded-full bg-gradient-to-tr from-[#E1306C] to-[#FCAF45] p-[2px] shadow-md">
-                  <div className="h-full w-full rounded-full bg-white flex flex-col items-center justify-center text-[10px] text-slate-600">
-                    <span className="text-xs font-semibold">Sorteios</span>
-                    <span className="text-[9px] text-slate-400">créditos</span>
-                  </div>
-                </div>
+        <section className="grid gap-4 md:grid-cols-2">
+          <div className="rounded-2xl border border-slate-200/80 bg-white/65 p-5 shadow-sm">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
+                  Créditos disponíveis
+                </p>
+                <p className="mt-2 text-4xl font-bold tracking-tight text-slate-900">
+                  {credits ?? 0}
+                </p>
+                <p className="mt-2 text-[11px] text-slate-500">
+                  Cada crédito = 1 sorteio. Compre mais em Comprar no menu.
+                </p>
               </div>
-            </div>
-
-            <div className="grid gap-4 md:grid-cols-1">
-              <div className="rounded-2xl border border-slate-200/80 bg-white/65 p-4">
-                <p className="text-xs font-semibold text-slate-700">
-                  Dica rápida de engajamento
-                </p>
-                <p className="mt-2 text-xs text-slate-600">
-                  Use a descrição do sorteio para reforçar as regras (seguir, curtir, comentar com palavra-chave)
-                  e lembre de fixar o post no topo do feed durante a campanha.
-                </p>
+              <div className="relative h-20 w-20 rounded-full bg-gradient-to-tr from-[#E1306C] to-[#FCAF45] p-[2px] shadow-md">
+                <div className="h-full w-full rounded-full bg-white flex flex-col items-center justify-center text-[10px] text-slate-600">
+                  <span className="text-xs font-semibold">Sorteios</span>
+                  <span className="text-[9px] text-slate-400">créditos</span>
+                </div>
               </div>
             </div>
           </div>
-
-          <aside className="rounded-2xl border border-slate-200/80 bg-white/65 p-5 space-y-4">
+          <div className="rounded-2xl border border-slate-200/80 bg-white/65 p-4">
             <p className="text-xs font-semibold text-slate-700">
-              Atividade em tempo real
+              Dica rápida de engajamento
             </p>
-            {activity ? (
-              <div className="space-y-3 text-[11px] text-slate-600">
-                <p>
-                  Você já realizou{" "}
-                  <span className="font-semibold text-slate-800">
-                    {activity.totalDraws}
-                  </span>{" "}
-                  sorteio(s) com{" "}
-                  <span className="font-semibold text-slate-800">
-                    {activity.totalWinners}
-                  </span>{" "}
-                  ganhador(es) ao todo.
-                </p>
-                {activity.lastDraws.length > 0 && (
-                  <div className="space-y-2">
-                    <p className="font-semibold text-slate-700">
-                      Últimos sorteios:
-                    </p>
-                    <ul className="space-y-1.5">
-                      {activity.lastDraws.map((d) => (
-                        <li
-                          key={d.id}
-                          className="flex flex-col rounded-lg border border-slate-200/80 bg-white/80 px-2.5 py-2"
-                        >
-                          <span className="text-[10px] text-slate-500">
-                            {new Date(d.created_at).toLocaleString("pt-BR")}
-                          </span>
-                          <span className="text-[11px] text-slate-700">
-                            Post ID:{" "}
-                            <span className="font-mono text-[10px]">
-                              {d.media_id}
-                            </span>
-                          </span>
-                          {Array.isArray(d.winners) && d.winners.length > 0 && (
-                            <span className="text-[11px] text-slate-600">
-                              Ganhador(es):{" "}
-                              {d.winners
-                                .map((w) =>
-                                  w?.username ? `@${w.username}` : "@?",
-                                )
-                                .join(", ")}
-                            </span>
-                          )}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <p className="text-[11px] text-slate-600">
-                Assim que você realizar seus primeiros sorteios, eles aparecem
-                aqui com data e ganhadores.
-              </p>
-            )}
-          </aside>
+            <p className="mt-2 text-xs text-slate-600">
+              Use a descrição do sorteio para reforçar as regras (seguir, curtir, comentar com palavra-chave)
+              e lembre de fixar o post no topo do feed durante a campanha.
+            </p>
+          </div>
         </section>
 
         <section className="space-y-3">
