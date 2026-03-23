@@ -202,7 +202,7 @@ export default function ContaPage() {
       setSuccessMsg("Dados atualizados com sucesso.");
     } catch (err: any) {
       console.error(err);
-      setErrorMsg("Erro ao salvar dados. Tente novamente.");
+      setErrorMsg(err?.message ?? "Erro ao salvar dados. Tente novamente.");
     } finally {
       setSaving(false);
     }

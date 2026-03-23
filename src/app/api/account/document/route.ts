@@ -84,7 +84,15 @@ export async function GET(req: NextRequest) {
       .maybeSingle();
 
     if (error) {
-      return NextResponse.json({ message: "Erro ao carregar documento." }, { status: 500 });
+      return NextResponse.json(
+        {
+          message:
+            error.code === "42P01"
+              ? "Tabela user_documents não encontrada. Execute o SQL de segurança no Supabase."
+              : "Erro ao carregar documento.",
+        },
+        { status: 500 }
+      );
     }
 
     if (!data) {
@@ -153,7 +161,15 @@ export async function POST(req: NextRequest) {
     );
 
     if (error) {
-      return NextResponse.json({ message: "Erro ao salvar documento." }, { status: 500 });
+      return NextResponse.json(
+        {
+          message:
+            error.code === "42P01"
+              ? "Tabela user_documents não encontrada. Execute o SQL de segurança no Supabase."
+              : "Erro ao salvar documento.",
+        },
+        { status: 500 }
+      );
     }
 
     return NextResponse.json(
@@ -162,7 +178,11 @@ export async function POST(req: NextRequest) {
     );
   } catch (e) {
     console.error("Erro POST /api/account/document:", e);
-    return NextResponse.json({ message: "Erro inesperado." }, { status: 500 });
+    const msg =
+      e instanceof Error && e.message.includes("DOC_ENCRYPTION_KEY")
+        ? "DOC_ENCRYPTION_KEY não configurada no servidor."
+        : "Erro inesperado.";
+    return NextResponse.json({ message: msg }, { status: 500 });
   }
 }
 
