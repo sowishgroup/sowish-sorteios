@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import { createHash, createCipheriv, createDecipheriv, randomBytes } from "crypto";
+import { createHash, createCipheriv, randomBytes } from "crypto";
 
 const getSupabaseServer = () => {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -46,19 +46,6 @@ function encryptText(plain: string) {
   return `${iv.toString("base64")}:${tag.toString("base64")}:${encrypted.toString("base64")}`;
 }
 
-function decryptText(payload: string) {
-  const [ivB64, tagB64, dataB64] = (payload || "").split(":");
-  if (!ivB64 || !tagB64 || !dataB64) throw new Error("Payload inválido");
-  const key = getKey();
-  const iv = Buffer.from(ivB64, "base64");
-  const tag = Buffer.from(tagB64, "base64");
-  const data = Buffer.from(dataB64, "base64");
-  const decipher = createDecipheriv("aes-256-gcm", key, iv);
-  decipher.setAuthTag(tag);
-  const decrypted = Buffer.concat([decipher.update(data), decipher.final()]);
-  return decrypted.toString("utf8");
-}
-
 async function getUserIdFromToken(req: NextRequest) {
   const authHeader = req.headers.get("authorization");
   const token = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : null;
@@ -79,7 +66,7 @@ export async function GET(req: NextRequest) {
     const supabaseServer = getSupabaseServer();
     const { data, error } = await supabaseServer
       .from("user_documents")
-      .select("document_type, document_masked, document_encrypted")
+      .select("document_type, document_masked")
       .eq("user_id", userId)
       .maybeSingle();
 
@@ -102,19 +89,10 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    let documentNumber = "";
-    try {
-      documentNumber = decryptText(String(data.document_encrypted));
-    } catch {
-      // se a chave mudar/erro, não quebrar a tela
-      documentNumber = "";
-    }
-
     return NextResponse.json(
       {
         documentType: data.document_type ?? null,
         documentMasked: data.document_masked ?? null,
-        documentNumber,
         hasDocument: true,
       },
       { status: 200 }

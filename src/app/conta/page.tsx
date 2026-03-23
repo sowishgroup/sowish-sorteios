@@ -82,13 +82,12 @@ export default function ContaPage() {
           if (docRes.ok) {
             const doc = (await docRes.json()) as {
               documentType?: "CPF" | "CNPJ" | null;
-              documentNumber?: string;
               documentMasked?: string | null;
             };
             if (doc.documentType === "CPF" || doc.documentType === "CNPJ") {
               setDocumentType(doc.documentType);
             }
-            setDocumentNumber(doc.documentNumber ?? "");
+            setDocumentNumber("");
             setDocumentMasked(doc.documentMasked ?? null);
           }
         }
@@ -399,9 +398,11 @@ export default function ContaPage() {
                       onChange={(e) => setDocumentNumber(e.target.value)}
                       className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-[#E1306C] focus:border-[#E1306C]"
                       placeholder={
-                        documentType === "CPF"
-                          ? "Somente números (11)"
-                          : "Somente números (14)"
+                        documentMasked
+                          ? `Documento salvo: ${documentMasked} (digite para alterar)`
+                          : documentType === "CPF"
+                            ? "Somente números (11)"
+                            : "Somente números (14)"
                       }
                     />
                     {documentMasked && (
