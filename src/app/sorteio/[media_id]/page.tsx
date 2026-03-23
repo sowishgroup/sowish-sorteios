@@ -58,6 +58,7 @@ export default function SorteioPage() {
   const [rolling, setRolling] = useState(false);
   const [rollingIndex, setRollingIndex] = useState(0);
   const [showReveal, setShowReveal] = useState(false);
+  const [countdown, setCountdown] = useState<number | null>(null);
 
   const resultImageRef = useRef<HTMLDivElement>(null);
   /** Ref do card sem imagem externa, só para captura (evita CORS no download) */
@@ -126,8 +127,14 @@ export default function SorteioPage() {
           clearInterval(rollInterval.current);
           rollInterval.current = null;
         }
-        setRolling(false);
-        setShowReveal(true);
+        setCountdown(3);
+        setTimeout(() => setCountdown(2), 350);
+        setTimeout(() => setCountdown(1), 700);
+        setTimeout(() => {
+          setCountdown(null);
+          setRolling(false);
+          setShowReveal(true);
+        }, 1100);
         return;
       }
       setRollingIndex((i) => (i + 1) % participants.length);
@@ -144,8 +151,14 @@ export default function SorteioPage() {
           const e = Date.now() - rollStartTime.current;
           if (e >= ROLL_DURATION_MS) {
             if (rollInterval.current) clearInterval(rollInterval.current);
-            setRolling(false);
-            setShowReveal(true);
+            setCountdown(3);
+            setTimeout(() => setCountdown(2), 350);
+            setTimeout(() => setCountdown(1), 700);
+            setTimeout(() => {
+              setCountdown(null);
+              setRolling(false);
+              setShowReveal(true);
+            }, 1100);
             return;
           }
           setRollingIndex((i) => (i + 1) % participants.length);
@@ -238,6 +251,7 @@ export default function SorteioPage() {
     setCommentStatus(null);
     setCommentId(null);
     setCommentText("");
+    setCountdown(null);
     setWinners([]);
     setShowReveal(false);
 
@@ -466,25 +480,44 @@ export default function SorteioPage() {
         {/* Tela da roleta: nomes rodando */}
         {rolling && participants.length > 0 && (
           <div
-            className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white/95 backdrop-blur-md px-4"
+            className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-slate-950/85 backdrop-blur-md px-4 overflow-hidden"
             aria-live="polite"
           >
-            <p className="text-sm uppercase tracking-widest text-slate-500 mb-4">
-              Sorteador
+            <div className="pointer-events-none absolute -top-16 -left-12 h-56 w-56 rounded-full bg-[#E1306C]/35 blur-3xl animate-pulse" />
+            <div className="pointer-events-none absolute -bottom-20 -right-12 h-64 w-64 rounded-full bg-[#FCAF45]/35 blur-3xl animate-pulse" />
+            <div className="pointer-events-none absolute top-1/3 right-1/4 h-32 w-32 rounded-full bg-white/10 blur-2xl" />
+
+            <p className="text-sm uppercase tracking-widest text-white/75 mb-4">
+              Sorteador em ação
             </p>
-            <div className="text-center min-h-[120px] flex flex-col justify-center">
-              <p
-                key={rollingIndex}
-                className="text-3xl sm:text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#E1306C] via-[#F77737] to-[#FCAF45] animate-pulse"
-              >
-                @{currentParticipant?.username ?? "..."}
-              </p>
-              <p className="mt-2 text-sm text-slate-500 line-clamp-2 max-w-md mx-auto">
+            <div className="relative text-center min-h-[180px] w-full max-w-xl rounded-3xl border border-white/20 bg-white/10 backdrop-blur-xl px-5 py-8 shadow-2xl flex flex-col justify-center">
+              <div className="mb-4 flex items-center justify-center">
+                <span className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-[#E1306C] via-[#F77737] to-[#FCAF45] text-3xl shadow-lg animate-bounce">
+                  🎉
+                </span>
+              </div>
+              <div className="relative inline-block">
+                <p
+                  key={rollingIndex}
+                  className="text-3xl sm:text-4xl md:text-5xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-[#E1306C] via-[#F77737] to-[#FCAF45] animate-pulse"
+                >
+                  @{currentParticipant?.username ?? "..."}
+                </p>
+                <span className="pointer-events-none absolute inset-y-0 -left-10 w-8 skew-x-[-20deg] bg-white/60 blur-sm animate-[ping_1.1s_ease-in-out_infinite]" />
+              </div>
+              <p className="mt-2 text-sm text-white/80 line-clamp-2 max-w-md mx-auto">
                 {currentParticipant?.text}
               </p>
+              {countdown !== null && (
+                <div className="mt-4 flex justify-center">
+                  <span className="inline-flex h-16 w-16 items-center justify-center rounded-full border border-white/40 bg-white/15 text-3xl font-black text-white animate-pulse">
+                    {countdown}
+                  </span>
+                </div>
+              )}
             </div>
-            <p className="mt-8 text-xs text-slate-500">
-              Parando em instantes...
+            <p className="mt-6 text-xs text-white/70">
+              Carregando sorteio... preparando revelação do ganhador.
             </p>
           </div>
         )}
@@ -524,9 +557,7 @@ export default function SorteioPage() {
                   >
                     <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-gradient-to-br from-[#E1306C] via-[#F77737] to-[#FCAF45] p-[3px] shadow-lg flex items-center justify-center">
                       <div className="relative w-full h-full rounded-full bg-white overflow-hidden flex items-center justify-center">
-                        <span className="text-3xl sm:text-4xl font-bold text-slate-700">
-                          {(w.username || "?").charAt(0).toUpperCase()}
-                        </span>
+                        <span className="absolute inset-0 bg-gradient-to-br from-[#f8fafc] to-[#e2e8f0]" />
                         {w.avatar_url ? (
                           <img
                             src={w.avatar_url}
@@ -536,7 +567,14 @@ export default function SorteioPage() {
                               (e.target as HTMLImageElement).style.display = "none";
                             }}
                           />
-                        ) : null}
+                        ) : (
+                          <div className="relative z-10 flex h-full w-full flex-col items-center justify-center">
+                            <span className="text-3xl sm:text-4xl font-bold text-slate-700 leading-none">
+                              {(w.username || "?").charAt(0).toUpperCase()}
+                            </span>
+                            <span className="mt-1 text-[12px]">🏆</span>
+                          </div>
+                        )}
                       </div>
                     </div>
                     <p className="mt-2 font-semibold text-slate-800">
