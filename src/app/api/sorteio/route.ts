@@ -84,12 +84,14 @@ export async function POST(req: NextRequest) {
       numWinners,
       keyword,
       uniquePerUser,
+      previewOnly,
     }: {
       userId: string;
       mediaId: string;
       numWinners: number;
       keyword: string | null;
       uniquePerUser: boolean;
+      previewOnly?: boolean;
     } = body;
 
     if (!userId || !mediaId || !numWinners || numWinners <= 0) {
@@ -101,41 +103,45 @@ export async function POST(req: NextRequest) {
 
     const supabaseServer = getSupabaseServer();
 
-    // 1) Verificar créditos do usuário
-    const { data: creditsRow, error: creditsError } = await supabaseServer
-      .from("user_credits")
-      .select("saldo_creditos")
-      .eq("user_id", userId)
-      .maybeSingle();
+    let novoSaldo: number | null = null;
 
-    if (creditsError) {
-      console.error("Erro ao buscar créditos:", creditsError);
-      return NextResponse.json(
-        { message: "Erro ao verificar créditos do usuário." },
-        { status: 500 }
-      );
-    }
+    // 1) Verificar/debitar crédito somente quando for o sorteio final
+    if (!previewOnly) {
+      const { data: creditsRow, error: creditsError } = await supabaseServer
+        .from("user_credits")
+        .select("saldo_creditos")
+        .eq("user_id", userId)
+        .maybeSingle();
 
-    if (!creditsRow || creditsRow.saldo_creditos <= 0) {
-      return NextResponse.json(
-        { message: "Você não possui créditos suficientes para realizar o sorteio." },
-        { status: 400 }
-      );
-    }
+      if (creditsError) {
+        console.error("Erro ao buscar créditos:", creditsError);
+        return NextResponse.json(
+          { message: "Erro ao verificar créditos do usuário." },
+          { status: 500 }
+        );
+      }
 
-    const novoSaldo = creditsRow.saldo_creditos - 1;
+      if (!creditsRow || creditsRow.saldo_creditos <= 0) {
+        return NextResponse.json(
+          { message: "Você não possui créditos suficientes para realizar o sorteio." },
+          { status: 400 }
+        );
+      }
 
-    const { error: updateCreditsError } = await supabaseServer
-      .from("user_credits")
-      .update({ saldo_creditos: novoSaldo })
-      .eq("user_id", userId);
+      novoSaldo = creditsRow.saldo_creditos - 1;
 
-    if (updateCreditsError) {
-      console.error("Erro ao debitar crédito:", updateCreditsError);
-      return NextResponse.json(
-        { message: "Erro ao debitar crédito do usuário." },
-        { status: 500 }
-      );
+      const { error: updateCreditsError } = await supabaseServer
+        .from("user_credits")
+        .update({ saldo_creditos: novoSaldo })
+        .eq("user_id", userId);
+
+      if (updateCreditsError) {
+        console.error("Erro ao debitar crédito:", updateCreditsError);
+        return NextResponse.json(
+          { message: "Erro ao debitar crédito do usuário." },
+          { status: 500 }
+        );
+      }
     }
 
     // 2) Buscar token do Instagram no Supabase
@@ -189,6 +195,18 @@ export async function POST(req: NextRequest) {
         {
           message:
             "Nenhum comentário válido após aplicar os filtros definidos.",
+        },
+        { status: 200 }
+      );
+    }
+
+    // Preview para exibir quantidade de válidos antes de sortear
+    if (previewOnly) {
+      return NextResponse.json(
+        {
+          participants: filtered,
+          totalComments: allComments.length,
+          totalValidAfterFilters: filtered.length,
         },
         { status: 200 }
       );

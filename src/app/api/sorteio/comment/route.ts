@@ -92,6 +92,77 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true }, { status: 200 });
     }
 
+    // UPDATE: Instagram não possui edição direta via API.
+    // Estratégia: excluir comentário antigo e criar um novo com o texto atualizado.
+    if (action === "update") {
+      if (!commentId) {
+        return NextResponse.json(
+          { message: "ID do comentário não informado para atualização." },
+          { status: 400 }
+        );
+      }
+      const text = (message ?? "").trim();
+      if (!text) {
+        return NextResponse.json(
+          { message: "Texto do comentário não informado." },
+          { status: 400 }
+        );
+      }
+
+      const deleteUrl = `https://graph.facebook.com/v20.0/${encodeURIComponent(
+        commentId
+      )}?access_token=${encodeURIComponent(accessToken)}`;
+      const delRes = await fetch(deleteUrl, { method: "DELETE" });
+      const delJson = await delRes.json().catch(() => ({}));
+      if (!delRes.ok) {
+        console.error(
+          "Erro ao excluir comentário antigo na atualização:",
+          delJson
+        );
+        return NextResponse.json(
+          {
+            message:
+              delJson?.error?.message ??
+              "Erro ao atualizar comentário no Instagram.",
+          },
+          { status: 400 }
+        );
+      }
+
+      const createUrl = `https://graph.facebook.com/v20.0/${encodeURIComponent(
+        mediaId
+      )}/comments?access_token=${encodeURIComponent(accessToken)}`;
+
+      const createRes = await fetch(createUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: new URLSearchParams({ message: text }),
+      });
+      const createJson = await createRes.json().catch(() => ({}));
+      if (!createRes.ok) {
+        console.error("Erro ao recriar comentário na atualização:", createJson);
+        return NextResponse.json(
+          {
+            message:
+              createJson?.error?.message ??
+              "Erro ao atualizar comentário no Instagram.",
+          },
+          { status: 400 }
+        );
+      }
+
+      return NextResponse.json(
+        {
+          ok: true,
+          id: createJson.id ?? null,
+          message: text,
+        },
+        { status: 200 }
+      );
+    }
+
     // Criar mensagem base (caso não venha pronta)
     let finalMessage = (message ?? "").trim();
 

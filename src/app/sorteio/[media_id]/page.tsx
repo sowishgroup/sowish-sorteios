@@ -44,11 +44,14 @@ export default function SorteioPage() {
   const [keyword, setKeyword] = useState("");
   const [uniquePerUser, setUniquePerUser] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [loadingComments, setLoadingComments] = useState(false);
+  const [commentsLoaded, setCommentsLoaded] = useState(false);
+  const [validCommentsCount, setValidCommentsCount] = useState<number | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [commentStatus, setCommentStatus] = useState<string | null>(null);
   const [commentLoading, setCommentLoading] = useState(false);
   const [commentId, setCommentId] = useState<string | null>(null);
-  const [commentText, setCommentText] = useState<string>("");
+  const [commentText, setCommentText] = useState("");
   const [winners, setWinners] = useState<Participant[]>([]);
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [rolling, setRolling] = useState(false);
@@ -158,9 +161,74 @@ export default function SorteioPage() {
 
   const numWinners = Math.max(1, parseInt(numWinnersInput, 10) || 1);
 
+  const buildDefaultCommentText = (list: Participant[]) => {
+    const usernames = list
+      .map((w) => (w.username || "").trim())
+      .filter((u) => u && u.toLowerCase() !== "desconhecido" && u !== "?");
+    const mentions = usernames.map((u) => (u.startsWith("@") ? u : `@${u}`));
+    if (mentions.length === 0) return "";
+    return mentions.length === 1
+      ? `Parabéns ${mentions[0]}! Você foi o ganhador do sorteio realizado pelo Sowish Sorteios.`
+      : `Parabéns ${mentions.join(", ")}! Vocês foram os ganhadores do sorteio realizado pelo Sowish Sorteios.`;
+  };
+
+  const handleLoadComments = async () => {
+    if (!userId || !mediaId) {
+      setErrorMsg("Preencha os dados e tente novamente.");
+      return;
+    }
+
+    setLoadingComments(true);
+    setErrorMsg(null);
+    setCommentsLoaded(false);
+    setValidCommentsCount(null);
+
+    try {
+      const res = await fetch("/api/sorteio", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId,
+          mediaId,
+          numWinners,
+          keyword: keyword.trim() || null,
+          uniquePerUser,
+          previewOnly: true,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setErrorMsg(data.message ?? "Erro ao carregar comentários.");
+        return;
+      }
+
+      setParticipants((data.participants ?? []) as Participant[]);
+      setParticipantsCount(
+        typeof data.totalComments === "number" ? data.totalComments : null
+      );
+      setValidCommentsCount(
+        typeof data.totalValidAfterFilters === "number"
+          ? data.totalValidAfterFilters
+          : null
+      );
+      setCommentsLoaded(true);
+    } catch (err) {
+      console.error(err);
+      setErrorMsg("Erro inesperado ao carregar comentários.");
+    } finally {
+      setLoadingComments(false);
+    }
+  };
+
   const handleRunDraw = async () => {
     if (!userId || !mediaId || numWinners <= 0) {
       setErrorMsg("Preencha os dados e tente novamente.");
+      return;
+    }
+    if (!commentsLoaded) {
+      setErrorMsg("Primeiro clique em Carregar comentários.");
       return;
     }
 
@@ -170,7 +238,6 @@ export default function SorteioPage() {
     setCommentId(null);
     setCommentText("");
     setWinners([]);
-    setParticipants([]);
     setShowReveal(false);
 
     try {
@@ -206,6 +273,12 @@ export default function SorteioPage() {
       setWinners(win);
       setParticipants(part.length > 0 ? part : win);
       setParticipantsCount(part.length > 0 ? part.length : win.length);
+      setValidCommentsCount(
+        typeof data.totalValidAfterFilters === "number"
+          ? data.totalValidAfterFilters
+          : null
+      );
+      setCommentText(buildDefaultCommentText(win));
       setRollingIndex(0);
       setRolling(true);
     } catch (err) {
@@ -224,16 +297,15 @@ export default function SorteioPage() {
       return;
     }
 
+    const text = commentText.trim();
+    if (!text) {
+      setCommentStatus("Edite o texto do comentário antes de postar.");
+      return;
+    }
+
     const usernames = winners
       .map((w) => (w.username || "").trim())
       .filter((u) => u && u.toLowerCase() !== "desconhecido" && u !== "?");
-
-    if (usernames.length === 0) {
-      setCommentStatus(
-        "Não foi possível identificar o @ do ganhador para comentar automaticamente."
-      );
-      return;
-    }
 
     setCommentLoading(true);
     setCommentStatus(null);
@@ -245,6 +317,7 @@ export default function SorteioPage() {
           userId,
           mediaId,
           usernames,
+          message: text,
         }),
       });
       const data = await res.json();
@@ -327,6 +400,7 @@ export default function SorteioPage() {
           mediaId,
           commentId,
           message: text,
+          action: "update",
         }),
       });
       const data = await res.json();
@@ -436,8 +510,28 @@ export default function SorteioPage() {
                     className="flex flex-col items-center text-center"
                   >
                     <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-gradient-to-br from-[#E1306C] via-[#F77737] to-[#FCAF45] p-[3px] shadow-lg flex items-center justify-center">
-                      <div className="w-full h-full rounded-full bg-white flex items-center justify-center text-3xl sm:text-4xl font-bold text-slate-700">
-                        {(w.username || "?").charAt(0).toUpperCase()}
+                      <div className="w-full h-full rounded-full bg-white overflow-hidden flex items-center justify-center">
+                        <img
+                          src={`https://unavatar.io/instagram/${encodeURIComponent(
+                            w.username || ""
+                          )}`}
+                          alt={`Foto de @${w.username}`}
+                          className="h-full w-full object-cover"
+                          onError={(e) => {
+                            const target = e.currentTarget;
+                            target.style.display = "none";
+                            const parent = target.parentElement;
+                            if (parent && !parent.querySelector(".avatar-fallback")) {
+                              const fallback = document.createElement("span");
+                              fallback.className =
+                                "avatar-fallback text-3xl sm:text-4xl font-bold text-slate-700";
+                              fallback.textContent = (w.username || "?")
+                                .charAt(0)
+                                .toUpperCase();
+                              parent.appendChild(fallback);
+                            }
+                          }}
+                        />
                       </div>
                     </div>
                     <p className="mt-2 font-semibold text-slate-800">
@@ -493,6 +587,18 @@ export default function SorteioPage() {
               </p>
 
               <div className="mt-4 flex flex-col items-center gap-3">
+                <div className="w-full max-w-md space-y-2 text-left">
+                  <label className="block text-[11px] font-medium text-slate-600">
+                    Texto para postar o resultado
+                  </label>
+                  <textarea
+                    value={commentText}
+                    onChange={(e) => setCommentText(e.target.value)}
+                    rows={3}
+                    placeholder="Digite o texto do comentário..."
+                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs text-slate-900 outline-none focus:ring-2 focus:ring-[#E1306C] focus:border-[#E1306C]"
+                  />
+                </div>
                 <button
                   type="button"
                   onClick={handleCommentWinners}
@@ -505,15 +611,6 @@ export default function SorteioPage() {
                 </button>
                 {commentId && (
                   <div className="w-full max-w-md space-y-2 text-left">
-                    <label className="block text-[11px] font-medium text-slate-600">
-                      Texto do comentário automático
-                    </label>
-                    <textarea
-                      value={commentText}
-                      onChange={(e) => setCommentText(e.target.value)}
-                      rows={3}
-                      className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs text-slate-900 outline-none focus:ring-2 focus:ring-[#E1306C] focus:border-[#E1306C]"
-                    />
                     <div className="flex flex-wrap gap-2 text-[11px]">
                       <button
                         type="button"
@@ -614,7 +711,11 @@ export default function SorteioPage() {
                   type="number"
                   min={1}
                   value={numWinnersInput}
-                  onChange={(e) => setNumWinnersInput(e.target.value)}
+                  onChange={(e) => {
+                    setNumWinnersInput(e.target.value);
+                    setCommentsLoaded(false);
+                    setValidCommentsCount(null);
+                  }}
                   onBlur={() => {
                     const n = parseInt(numWinnersInput, 10);
                     if (Number.isNaN(n) || n < 1) setNumWinnersInput("1");
@@ -631,7 +732,11 @@ export default function SorteioPage() {
                 <input
                   type="text"
                   value={keyword}
-                  onChange={(e) => setKeyword(e.target.value)}
+                  onChange={(e) => {
+                    setKeyword(e.target.value);
+                    setCommentsLoaded(false);
+                    setValidCommentsCount(null);
+                  }}
                   placeholder="Ex: #sowishsorteios"
                   className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-[#E1306C] focus:border-[#E1306C]"
                 />
@@ -645,7 +750,11 @@ export default function SorteioPage() {
                   id="uniquePerUser"
                   type="checkbox"
                   checked={uniquePerUser}
-                  onChange={(e) => setUniquePerUser(e.target.checked)}
+                  onChange={(e) => {
+                    setUniquePerUser(e.target.checked);
+                    setCommentsLoaded(false);
+                    setValidCommentsCount(null);
+                  }}
                   className="mt-1 h-4 w-4 rounded border-slate-400 bg-white text-[#E1306C] focus:ring-[#E1306C]"
                 />
                 <label
@@ -656,6 +765,31 @@ export default function SorteioPage() {
                 </label>
               </div>
 
+              <div className="space-y-2 rounded-xl border border-slate-200 bg-white/70 p-3">
+                <button
+                  type="button"
+                  onClick={handleLoadComments}
+                  disabled={loadingComments}
+                  className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  {loadingComments ? "Carregando comentários..." : "Carregar comentários"}
+                </button>
+                {loadingComments && (
+                  <div className="flex items-center gap-2 text-xs text-slate-500">
+                    <span className="h-3 w-3 animate-spin rounded-full border-2 border-slate-300 border-t-[#E1306C]" />
+                    Buscando e validando comentários do post...
+                  </div>
+                )}
+                {!loadingComments && commentsLoaded && (
+                  <p className="text-xs text-emerald-700">
+                    Comentários válidos carregados:{" "}
+                    <span className="font-semibold">
+                      {validCommentsCount ?? 0}
+                    </span>
+                  </p>
+                )}
+              </div>
+
               {errorMsg && (
                 <p className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2">
                   {errorMsg}
@@ -664,7 +798,12 @@ export default function SorteioPage() {
 
               <button
                 type="button"
-                disabled={loading}
+                disabled={
+                  loading ||
+                  loadingComments ||
+                  !commentsLoaded ||
+                  (validCommentsCount ?? 0) <= 0
+                }
                 onClick={handleRunDraw}
                 className="mt-2 w-full rounded-xl bg-gradient-to-r from-[#E1306C] to-[#F77737] hover:brightness-110 text-white font-semibold py-3.5 text-sm uppercase tracking-wide transition disabled:opacity-60 disabled:cursor-not-allowed"
               >
@@ -674,9 +813,8 @@ export default function SorteioPage() {
               </button>
 
               <p className="text-xs text-slate-500">
-                Os nomes dos participantes vão rodar na tela e depois o(s)
-                ganhador(es) será(ão) revelado(s). Você pode compartilhar o
-                resultado no WhatsApp ou baixar uma imagem para o Instagram.
+                Primeiro carregue os comentários para ver quantos são válidos.
+                Depois clique em Realizar Sorteio para seguir com a roleta.
               </p>
             </section>
           )}
