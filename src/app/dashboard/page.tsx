@@ -147,39 +147,55 @@ export default function DashboardPage() {
           )}
         </header>
 
-        <section className="overflow-hidden rounded-2xl border border-slate-200/70 bg-white/55 backdrop-blur-sm shadow-sm">
-          <div className="relative aspect-[4/3] w-full sm:aspect-[21/9]">
-            <img
-              src="/banner-home.png"
-              alt="Banner principal Sowish Sorteios"
-              className="absolute inset-0 h-full w-full object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-r from-slate-900/65 via-slate-900/30 to-transparent" />
-            <div className="absolute inset-0 flex items-end p-4 sm:p-6">
-              <div className="max-w-xl rounded-xl bg-white/80 px-4 py-3 backdrop-blur-sm">
-                <p className="text-[11px] uppercase tracking-[0.25em] text-slate-500">
-                  Destaque
+        <section className="rounded-2xl border border-slate-200/70 bg-white/70 backdrop-blur-sm shadow-sm p-4 sm:p-6">
+          <div className="grid gap-4 md:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)] md:items-center">
+            <div className="rounded-2xl border border-slate-200/80 bg-white/90 p-4 sm:p-5">
+              <img
+                src="/logo.png"
+                alt="Logo Sowish Sorteios"
+                className="h-auto w-full max-w-[360px] sm:max-w-[430px]"
+              />
+              <p className="mt-3 text-xs sm:text-sm text-slate-600">
+                Sua central para sorteios no Instagram com experiência clara, rápida e profissional.
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <Link
+                  href="/meus-posts"
+                  className="inline-flex items-center rounded-full bg-gradient-to-r from-[#E1306C] via-[#F77737] to-[#FCAF45] px-3 py-1.5 text-[11px] font-semibold text-white shadow-sm hover:opacity-95"
+                >
+                  Começar sorteio
+                </Link>
+                <Link
+                  href="/comprar"
+                  className="inline-flex items-center rounded-full border border-slate-300 bg-white/90 px-3 py-1.5 text-[11px] font-medium text-slate-700 hover:bg-white"
+                >
+                  Comprar créditos
+                </Link>
+              </div>
+            </div>
+            <div className="rounded-2xl border border-slate-200/80 bg-white/85 p-4">
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-xs font-semibold text-slate-700">
+                  Passo a passo rápido
                 </p>
-                <h2 className="mt-1 text-base font-semibold text-slate-900 sm:text-lg">
-                  Sorteios com visual profissional e fluxo simples
-                </h2>
-                <p className="mt-1 text-xs text-slate-600 sm:text-sm">
-                  Escolha seu post, carregue comentários válidos e realize o sorteio em poucos cliques.
-                </p>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <Link
-                    href="/meus-posts"
-                    className="inline-flex items-center rounded-full bg-gradient-to-r from-[#E1306C] via-[#F77737] to-[#FCAF45] px-3 py-1.5 text-[11px] font-semibold text-white shadow-sm hover:opacity-95"
+                <span className="rounded-full bg-gradient-to-r from-[#E1306C] to-[#F77737] px-2 py-1 text-[10px] font-semibold text-white">
+                  4 passos
+                </span>
+              </div>
+              <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                {[
+                  "1) Conecte o Instagram",
+                  "2) Escolha o post em Meus posts",
+                  "3) Carregue os comentários válidos",
+                  "4) Realize o sorteio e publique o resultado",
+                ].map((step) => (
+                  <div
+                    key={step}
+                    className="rounded-lg border border-slate-200/70 bg-white/90 px-3 py-2"
                   >
-                    Começar sorteio
-                  </Link>
-                  <Link
-                    href="/comprar"
-                    className="inline-flex items-center rounded-full border border-slate-300 bg-white/90 px-3 py-1.5 text-[11px] font-medium text-slate-700 hover:bg-white"
-                  >
-                    Comprar créditos
-                  </Link>
-                </div>
+                    <p className="text-[11px] font-medium text-slate-700">{step}</p>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
@@ -209,42 +225,7 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="rounded-2xl border border-slate-200/80 bg-white/65 p-4">
-                <div className="flex items-center justify-between gap-2">
-                  <p className="text-xs font-semibold text-slate-700">
-                    Como fazer seu sorteio
-                  </p>
-                  <span className="rounded-full bg-gradient-to-r from-[#E1306C] to-[#F77737] px-2 py-1 text-[10px] font-semibold text-white">
-                    Passo a passo
-                  </span>
-                </div>
-                <div className="mt-3 grid gap-2">
-                  {[
-                    "Conecte Instagram",
-                    "Vá em Meus posts",
-                    "Selecione o post do sorteio",
-                    "Defina número de ganhadores",
-                    "Defina se tem palavra-chave no sorteio",
-                    "Selecione se a pessoa participa só 1 vez",
-                    "Clique em Carregar comentários",
-                    "Clique em Realizar sorteio",
-                    "Se quiser, comente automaticamente no post com o ganhador",
-                  ].map((step, idx) => (
-                    <div
-                      key={step}
-                      className="flex items-start gap-2 rounded-lg border border-slate-200/70 bg-white/85 px-2.5 py-2"
-                    >
-                      <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-gradient-to-r from-[#E1306C] via-[#F77737] to-[#FCAF45] text-[10px] font-bold text-white">
-                        {idx + 1}
-                      </span>
-                      <p className="text-[11px] font-medium text-slate-700">
-                        {step}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </div>
+            <div className="grid gap-4 md:grid-cols-1">
               <div className="rounded-2xl border border-slate-200/80 bg-white/65 p-4">
                 <p className="text-xs font-semibold text-slate-700">
                   Dica rápida de engajamento

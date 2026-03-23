@@ -218,8 +218,8 @@ export default function AdminPage() {
 
   return (
     <main className="min-h-screen text-slate-900">
-      <div className="mx-auto max-w-6xl px-4 sm:px-6 py-8 mt-4 md:mt-6 space-y-6">
-        <header className="space-y-1">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6 py-8 mt-4 md:mt-6 space-y-6 rounded-2xl border border-white/30 bg-white/72 backdrop-blur-sm shadow-sm">
+        <header className="space-y-1 rounded-xl bg-white/82 border border-slate-200/70 p-4">
           <p className="text-[11px] uppercase tracking-[0.3em] text-slate-500">
             Admin
           </p>
@@ -233,7 +233,7 @@ export default function AdminPage() {
 
         {summary && (
           <section className="grid gap-4 sm:grid-cols-2">
-            <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-5">
+            <div className="rounded-2xl border border-slate-200/80 bg-white/88 p-5">
               <p className="text-xs font-semibold text-slate-600">
                 Usuários cadastrados
               </p>
@@ -241,7 +241,7 @@ export default function AdminPage() {
                 {summary.totalUsers ?? 0}
               </p>
             </div>
-            <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-5">
+            <div className="rounded-2xl border border-slate-200/80 bg-white/88 p-5">
               <p className="text-xs font-semibold text-slate-600">
                 Créditos em circulação
               </p>
@@ -254,7 +254,7 @@ export default function AdminPage() {
         )}
 
         <section className="grid gap-6 md:grid-cols-2 items-start">
-          <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-5 space-y-4">
+          <div className="rounded-2xl border border-slate-200/80 bg-white/88 p-5 space-y-4">
             <p className="text-sm font-semibold text-slate-700">
               Adicionar créditos manuais
             </p>
@@ -299,7 +299,7 @@ export default function AdminPage() {
             </button>
           </div>
 
-          <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-5 space-y-4">
+          <div className="rounded-2xl border border-slate-200/80 bg-white/88 p-5 space-y-4">
             <p className="text-sm font-semibold text-slate-700">
               Enviar comunicado global
             </p>
@@ -343,7 +343,7 @@ export default function AdminPage() {
           </div>
         </section>
 
-        <section className="rounded-2xl border border-slate-200 bg-slate-50/80 p-5 space-y-4">
+        <section className="rounded-2xl border border-slate-200/80 bg-white/88 p-5 space-y-4">
           <p className="text-sm font-semibold text-slate-700">
             Configurações de produção Asaas (Pix)
           </p>
