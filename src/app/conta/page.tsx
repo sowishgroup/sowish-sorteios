@@ -23,6 +23,9 @@ export default function ContaPage() {
   const [documentType, setDocumentType] = useState<"CPF" | "CNPJ">("CPF");
   const [documentNumber, setDocumentNumber] = useState("");
   const [documentMasked, setDocumentMasked] = useState<string | null>(null);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [updatingPassword, setUpdatingPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -279,6 +282,42 @@ export default function ContaPage() {
     }
   };
 
+  const handleChangePassword = async () => {
+    const password = newPassword.trim();
+    const confirm = confirmPassword.trim();
+
+    if (!password || !confirm) {
+      setErrorMsg("Preencha e confirme a nova senha.");
+      return;
+    }
+    if (password.length < 6) {
+      setErrorMsg("A senha deve ter pelo menos 6 caracteres.");
+      return;
+    }
+    if (password !== confirm) {
+      setErrorMsg("A confirmação da senha não confere.");
+      return;
+    }
+
+    try {
+      setUpdatingPassword(true);
+      setErrorMsg(null);
+      setSuccessMsg(null);
+
+      const { error } = await supabase.auth.updateUser({ password });
+      if (error) throw error;
+
+      setNewPassword("");
+      setConfirmPassword("");
+      setSuccessMsg("Senha alterada com sucesso.");
+    } catch (err: any) {
+      console.error(err);
+      setErrorMsg(err?.message ?? "Erro ao alterar senha.");
+    } finally {
+      setUpdatingPassword(false);
+    }
+  };
+
   if (loading) {
     return (
       <main className="min-h-screen text-slate-700 flex items-center justify-center">
@@ -475,10 +514,32 @@ export default function ContaPage() {
                 Segurança e acesso
               </p>
               <p className="text-xs text-slate-500">
-                Em breve você poderá alterar sua senha diretamente por aqui. No
-                momento, utilize o fluxo de redefinição via e-mail caso
-                esqueça.
+                Altere sua senha de acesso com segurança.
               </p>
+              <div className="space-y-2">
+                <input
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-[#E1306C] focus:border-[#E1306C]"
+                  placeholder="Nova senha"
+                />
+                <input
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-[#E1306C] focus:border-[#E1306C]"
+                  placeholder="Confirmar nova senha"
+                />
+                <button
+                  type="button"
+                  onClick={handleChangePassword}
+                  disabled={updatingPassword}
+                  className="w-full rounded-lg border border-slate-300 bg-white text-xs font-medium py-2.5 text-slate-700 hover:bg-slate-50 transition disabled:opacity-60"
+                >
+                  {updatingPassword ? "Alterando senha..." : "Alterar senha"}
+                </button>
+              </div>
             </div>
           </div>
 
@@ -509,7 +570,7 @@ export default function ContaPage() {
                 onClick={() => router.push("/comprar")}
                 className="w-full rounded-lg bg-[#E1306C] hover:bg-[#C13584] text-white text-xs font-semibold py-2.5 transition"
               >
-                Comprar créditos (Pix em breve)
+                Comprar créditos com Pix
               </button>
             </div>
 
