@@ -148,7 +148,7 @@ export default function DashboardPage() {
         </header>
 
         <section className="overflow-hidden rounded-2xl border border-slate-200/70 bg-white/55 backdrop-blur-sm shadow-sm">
-          <div className="relative aspect-[16/9] w-full sm:aspect-[21/9]">
+          <div className="relative aspect-[4/3] w-full sm:aspect-[21/9]">
             <img
               src="/banner-home.png"
               alt="Banner principal Sowish Sorteios"
@@ -166,6 +166,20 @@ export default function DashboardPage() {
                 <p className="mt-1 text-xs text-slate-600 sm:text-sm">
                   Escolha seu post, carregue comentários válidos e realize o sorteio em poucos cliques.
                 </p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <Link
+                    href="/meus-posts"
+                    className="inline-flex items-center rounded-full bg-gradient-to-r from-[#E1306C] via-[#F77737] to-[#FCAF45] px-3 py-1.5 text-[11px] font-semibold text-white shadow-sm hover:opacity-95"
+                  >
+                    Começar sorteio
+                  </Link>
+                  <Link
+                    href="/comprar"
+                    className="inline-flex items-center rounded-full border border-slate-300 bg-white/90 px-3 py-1.5 text-[11px] font-medium text-slate-700 hover:bg-white"
+                  >
+                    Comprar créditos
+                  </Link>
+                </div>
               </div>
             </div>
           </div>
